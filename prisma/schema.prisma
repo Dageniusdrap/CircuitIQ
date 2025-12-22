@@ -347,6 +347,7 @@ model Analysis {
   
   // Conversation History
   chatHistory       Json      // Array of messages
+  measurements      Measurement[]
   
   // Metadata
   processingTime    Int?      // in milliseconds
@@ -413,4 +414,102 @@ model ActivityLog {
   @@index([userId])
   @@index([action])
   @@index([createdAt])
+}
+
+// ============================================
+// MARKETPLACE & KNOWLEDGE MODELS
+// ============================================
+
+model ConfirmedFix {
+  id              String   @id @default(cuid())
+  
+  // Issue Context
+  symptom         String   @db.Text
+  vehicleMake     String
+  vehicleModel    String
+  vehicleYear     Int?
+  componentName   String
+  
+  // Solution
+  fixDescription  String   @db.Text
+  steps           Json?    // Array of strings
+  
+  // Metrics
+  timesSolved     Int      @default(1)
+  votes           Int      @default(0)
+  difficulty      String?  // Easy, Medium, Hard
+  averageCost     Float?
+  averageTime     Int?     // in minutes
+  
+  // Verification
+  verifiedBy      Json?    // Array of user IDs or Names
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([symptom])
+  @@index([vehicleMake, vehicleModel])
+}
+
+model TSB {
+  id              String   @id @default(cuid())
+  
+  number          String   // e.g., "SB-737-24-001"
+  title           String
+  description     String   @db.Text
+  
+  // Applicability
+  manufacturer    String
+  models          Json     // Array of model names
+  years           Json?    // Array of years or range strings
+  
+  // Content
+  issue           String   @db.Text
+  resolution      String   @db.Text
+  pdfUrl          String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt // Added for consistency
+  
+  @@unique([number])
+  @@index([manufacturer])
+}
+
+model Measurement {
+  id            String   @id @default(cuid())
+  
+  analysisId    String?
+  analysis      Analysis? @relation(fields: [analysisId], references: [id])
+  componentId   String?
+  
+  timestamp     DateTime @default(now())
+  type          String   // voltage, resistance, current, frequency
+  value         Float
+  unit          String   // V, Ohm, A, Hz
+  location      String?  // "Pin 30", "Connector C1"
+  
+  // Analysis
+  isAbnormal    Boolean  @default(false)
+  notes         String?
+  
+  @@index([analysisId])
+  @@index([componentId])
+}
+
+model PartSource {
+  id            String   @id @default(cuid())
+  
+  partNumber    String
+  
+  vendor        String   // "Aircraft Spruce", "Boeing", "DigiKey"
+  price         Float
+  currency      String   @default("USD")
+  inStock       Boolean  @default(true)
+  leadTime      String?  // "2-3 days"
+  buyLink       String?
+  
+  lastChecked   DateTime @default(now())
+  
+  @@index([partNumber])
+  @@index([vendor])
 }

@@ -5,7 +5,9 @@ import { UploadButton, UploadDropzone } from "@/lib/uploadthing"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { Upload, FileText, CheckCircle, XCircle, Loader2 } from "lucide-react"
+// import Link from "next/link" // Ensure Link is imported
+import Link from "next/link"
+import { Upload, FileText, CheckCircle, XCircle, Loader2, ArrowRight } from "lucide-react"
 import { toast } from "sonner"
 
 interface UploadedFile {
@@ -14,6 +16,7 @@ interface UploadedFile {
     key: string
     status: "uploading" | "processing" | "completed" | "error"
     progress: number
+    diagramId?: string // We can't really get this back easily from uploadthing client callback without a custom server action return, but let's simulate or improve logic later.
 }
 
 export function UploadZone() {
@@ -22,10 +25,10 @@ export function UploadZone() {
 
     return (
         <div className="space-y-6">
-            <Card className="border-2 border-dashed">
+            <Card className="border-2 border-dashed border-slate-700 bg-slate-900/50">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <Upload className="h-5 w-5" />
+                        <Upload className="h-5 w-5 text-blue-500" />
                         Upload Wiring Diagrams
                     </CardTitle>
                     <CardDescription>
@@ -44,16 +47,21 @@ export function UploadZone() {
                                 name: file.name,
                                 url: file.url,
                                 key: file.key,
-                                status: "processing",
+                                status: "completed",
                                 progress: 100,
                             }))
 
-                            setUploadedFiles(prev => [...prev, ...newFiles])
+                            setUploadedFiles(prev => {
+                                // Remove the uploading placeholders
+                                const filtered = prev.filter(f => f.status !== "uploading")
+                                return [...filtered, ...newFiles]
+                            })
                             setIsUploading(false)
                         }}
                         onUploadError={(error: Error) => {
                             toast.error(`ERROR! ${error.message}`)
                             setIsUploading(false)
+                            setUploadedFiles(prev => prev.map(f => f.status === "uploading" ? { ...f, status: "error" } : f))
                         }}
                         onUploadBegin={(name) => {
                             console.log("Uploading: ", name)
@@ -69,26 +77,28 @@ export function UploadZone() {
                             }])
                         }}
                         onUploadProgress={(progress) => {
-                            console.log("Progress: ", progress)
                             // Update progress for the last file
                             setUploadedFiles(prev => {
                                 const newFiles = [...prev]
-                                if (newFiles.length > 0) {
-                                    newFiles[newFiles.length - 1].progress = progress
+                                const uploadingFile = newFiles.find(f => f.status === "uploading")
+                                if (uploadingFile) {
+                                    uploadingFile.progress = progress
                                 }
                                 return newFiles
                             })
                         }}
                         appearance={{
-                            button: "bg-blue-600 hover:bg-blue-700",
-                            container: "border-slate-700",
+                            button: "bg-blue-600 hover:bg-blue-700 text-white",
+                            container: "border-slate-700 hover:border-blue-500 transition-colors",
+                            label: "text-blue-400 hover:text-blue-300",
+                            allowedContent: "text-slate-400"
                         }}
                     />
                 </CardContent>
             </Card>
 
             {uploadedFiles.length > 0 && (
-                <Card>
+                <Card className="border-slate-800 bg-slate-900">
                     <CardHeader>
                         <CardTitle>Processing Queue</CardTitle>
                         <CardDescription>
@@ -97,34 +107,42 @@ export function UploadZone() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         {uploadedFiles.map((file, index) => (
-                            <div key={index} className="space-y-2">
-                                <div className="flex items-center justify-between">
+                            <div key={index} className="bg-slate-950 p-4 rounded-lg border border-slate-800">
+                                <div className="flex items-center justify-between mb-3">
                                     <div className="flex items-center gap-3">
-                                        <FileText className="h-5 w-5 text-slate-400" />
+                                        <div className="p-2 bg-slate-900 rounded-md">
+                                            <FileText className="h-5 w-5 text-slate-400" />
+                                        </div>
                                         <div>
-                                            <p className="font-medium text-sm">{file.name}</p>
+                                            <p className="font-medium text-sm text-slate-200">{file.name}</p>
                                             <p className="text-xs text-slate-500">
                                                 {file.status === "uploading" && "Uploading..."}
-                                                {file.status === "processing" && "Processing with AI..."}
-                                                {file.status === "completed" && "Completed"}
-                                                {file.status === "error" && "Error"}
+                                                {file.status === "processing" && "AI Processing..."}
+                                                {file.status === "completed" && "Ready for review"}
+                                                {file.status === "error" && "Upload failed"}
                                             </p>
                                         </div>
                                     </div>
                                     {file.status === "uploading" && (
                                         <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
                                     )}
-                                    {file.status === "processing" && (
-                                        <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
-                                    )}
                                     {file.status === "completed" && (
-                                        <CheckCircle className="h-5 w-5 text-green-500" />
+                                        <div className="flex items-center gap-2">
+                                            <CheckCircle className="h-5 w-5 text-emerald-500" />
+                                            <Button asChild size="sm" variant="secondary" className="h-8">
+                                                <Link href="/diagrams">
+                                                    View Library <ArrowRight className="ml-2 h-3 w-3" />
+                                                </Link>
+                                            </Button>
+                                        </div>
                                     )}
                                     {file.status === "error" && (
                                         <XCircle className="h-5 w-5 text-red-500" />
                                     )}
                                 </div>
-                                <Progress value={file.progress} className="h-2" />
+                                {file.status === "uploading" && (
+                                    <Progress value={file.progress} className="h-1 bg-slate-800" />
+                                )}
                             </div>
                         ))}
                     </CardContent>

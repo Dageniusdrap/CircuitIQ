@@ -40,8 +40,16 @@ export async function analyzeDiagramWithVision(
             messages: [
                 {
                     role: "system",
-                    content: `You are an expert aircraft and automotive electrical systems engineer. 
-Analyze wiring diagrams and extract detailed component information, connections, and system relationships.
+                    content: `You are an expert avionics and electrical systems engineer. Your task is to analyze wiring diagrams and extract structured data.
+
+CRITICAL: You must classify the system according to ATA iSpec 2200 standards (ATA Chapters).
+Use the standard 2-digit ATA code (e.g., "32" for Landing Gear, "24" for Electrical Power).
+If the diagram implies a specific ATA chapter, explicitly state it in the 'systemCode' field.
+
+Extract the following:
+1. Vehicle Information (Type, Make, Model, Year, System Name, ATA Chapter Code)
+2. Components (Name, Type, Location, Part Number, Function)
+3. Connections (From, To, Wire Type, Color, Gauge, Signal Type)
 Provide responses in valid JSON format only, with no additional text or markdown formatting.`,
                 },
                 {
