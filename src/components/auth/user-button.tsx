@@ -12,6 +12,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { LogOut, Settings, User } from "lucide-react"
+import Link from "next/link"
 
 export function UserButton() {
     const user = useCurrentUser()
@@ -39,13 +40,17 @@ export function UserButton() {
             <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                    <User className="mr-2 h-4 w-4" />
-                    Profile
+                <DropdownMenuItem asChild>
+                    <Link href="/profile" className="cursor-pointer w-full flex items-center">
+                        <User className="mr-2 h-4 w-4" />
+                        Profile
+                    </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
+                <DropdownMenuItem asChild>
+                    <Link href="/settings" className="cursor-pointer w-full flex items-center">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Settings
+                    </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>

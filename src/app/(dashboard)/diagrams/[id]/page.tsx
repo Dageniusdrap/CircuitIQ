@@ -8,6 +8,7 @@ import { Share2, Download, Zap, MessageSquare } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { WireTracer } from "@/components/diagrams/wire-tracer"
+import { DiagnosticsWizard } from "@/components/diagnostics/diagnostics-wizard"
 
 export default async function DiagramDetailPage({
     params,
@@ -80,12 +81,24 @@ export default async function DiagramDetailPage({
                         </div>
                     </Card>
 
-                    <Tabs defaultValue="components" className="w-full">
+                    <Tabs defaultValue="diagnostics" className="w-full">
                         <TabsList className="bg-slate-900">
+
+                            <TabsTrigger value="diagnostics">
+                                <MessageSquare className="mr-2 h-4 w-4" />
+                                Smart Diagnostics
+                            </TabsTrigger>
                             <TabsTrigger value="components">Components ({diagram.components.length})</TabsTrigger>
                             <TabsTrigger value="connections">Connections</TabsTrigger>
-                            <TabsTrigger value="raw">Raw Data</TabsTrigger>
                         </TabsList>
+
+                        <TabsContent value="diagnostics" className="mt-4">
+                            <DiagnosticsWizard
+                                diagramId={diagram.id}
+                                vehicleInfo={`${diagram.manufacturer} ${diagram.model}`}
+                            />
+                        </TabsContent>
+
                         <TabsContent value="components" className="mt-4">
                             <Card>
                                 <CardContent className="p-0">

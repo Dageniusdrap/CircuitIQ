@@ -11,18 +11,29 @@ export const metadata: Metadata = {
   description: "Professional electrical troubleshooting for aircraft, automotive, and marine systems",
 }
 
+import { ThemeProvider } from "@/components/providers/theme-provider"
+
+// ... imports
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className={inter.className} suppressHydrationWarning>
-        <AuthProvider>
-          {children}
-          <Toaster />
-        </AuthProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AuthProvider>
+            {children}
+            <Toaster />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
