@@ -1,0 +1,416 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User roles
+enum UserRole {
+  ADMIN
+  ENGINEER
+  TECHNICIAN
+  VIEWER
+}
+
+// Vehicle types
+enum VehicleType {
+  AIRCRAFT
+  AUTOMOTIVE
+  MARINE
+  ELECTRIC_VEHICLE
+}
+
+// Processing status
+enum ProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// ============================================
+// AUTH MODELS (NextAuth.js v5)
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  role          UserRole  @default(TECHNICIAN)
+  password      String?
+  
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  diagrams      Diagram[]
+  analyses      Analysis[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================
+// DIAGRAM MODELS
+// ============================================
+
+model Diagram {
+  id              String            @id @default(cuid())
+  title           String
+  description     String?           @db.Text
+  
+  // Vehicle Information
+  vehicleType     VehicleType
+  manufacturer    String
+  model           String
+  year            Int?
+  system          String            // e.g., "Landing Gear", "Power Distribution"
+  systemCode      String?           // e.g., "28-31-00" (ATA chapter)
+  
+  // File Information
+  fileUrl         String
+  fileKey         String            // UploadThing file key
+  fileType        String            // pdf, png, jpg, dwg
+  fileSize        Int               // in bytes
+  thumbnailUrl    String?
+  
+  // Processing Status
+  status          ProcessingStatus  @default(PENDING)
+  processingStartedAt DateTime?
+  processingCompletedAt DateTime?
+  processingError String?           @db.Text
+  
+  // AI Extraction Results
+  aiExtractedData Json?             // Raw AI response
+  confidence      Float?            // 0-100
+  
+  // Relations
+  uploadedById    String
+  uploadedBy      User              @relation(fields: [uploadedById], references: [id])
+  components      Component[]
+  analyses        Analysis[]
+  
+  // Metadata
+  viewCount       Int               @default(0)
+  downloadCount   Int               @default(0)
+  
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  @@index([vehicleType, manufacturer, model])
+  @@index([system])
+  @@index([uploadedById])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ============================================
+// COMPONENT MODELS
+// ============================================
+
+model Component {
+  id              String              @id @default(cuid())
+  diagramId       String
+  diagram         Diagram             @relation(fields: [diagramId], references: [id], onDelete: Cascade)
+  
+  // Component Identity
+  name            String
+  partNumber      String?
+  alternatePartNumbers String?        @db.Text // Comma-separated
+  type            String              // relay, fuse, switch, sensor, actuator, connector
+  manufacturer    String?
+  
+  // Location
+  location        String?             // "E3 Equipment Bay, Panel P6"
+  locationCode    String?             // "E3-P6"
+  
+  // Technical Details
+  function        String              @db.Text
+  specifications  Json?               // Flexible JSON for voltage, current, resistance, etc.
+  operatingParams Json?               // Normal operating parameters
+  
+  // Visual Position (on diagram)
+  xPosition       Float?              // X coordinate (percentage or pixels)
+  yPosition       Float?              // Y coordinate
+  boundingBox     Json?               // {x, y, width, height} for highlighting
+  
+  // Relations
+  connectionsFrom ComponentConnection[] @relation("FromComponent")
+  connectionsTo   ComponentConnection[] @relation("ToComponent")
+  failureModes    FailureMode[]
+  testProcedures  TestProcedure[]
+  
+  // Metadata
+  extractedByAI   Boolean             @default(false)
+  verifiedByUser  Boolean             @default(false)
+  confidence      Float?              // AI confidence 0-100
+  
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  
+  @@index([diagramId])
+  @@index([type])
+  @@index([partNumber])
+}
+
+model ComponentConnection {
+  id            String    @id @default(cuid())
+  
+  // Connection endpoints
+  fromId        String
+  toId          String
+  fromComponent Component @relation("FromComponent", fields: [fromId], references: [id], onDelete: Cascade)
+  toComponent   Component @relation("ToComponent", fields: [toId], references: [id], onDelete: Cascade)
+  
+  // Wire/Connection Details
+  wireColor     String?
+  wireGauge     String?             // e.g., "22AWG", "16AWG"
+  wireLength    Float?              // in meters
+  wireRoute     String?             @db.Text
+  
+  // Connector Details
+  connectorType String?
+  connectorPart String?
+  pinNumber     String?
+  pinFunction   String?
+  
+  // Signal/Power Type
+  signalType    String?             // power, ground, signal, data, can_bus
+  voltage       String?             // e.g., "28V DC", "115V AC"
+  current       String?             // e.g., "5A", "500mA"
+  
+  // Testing
+  expectedResistance Float?         // in ohms
+  expectedVoltage    Float?         // in volts
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@unique([fromId, toId])
+  @@index([fromId])
+  @@index([toId])
+}
+
+// ============================================
+// FAILURE & DIAGNOSTIC MODELS
+// ============================================
+
+model FailureMode {
+  id                  String    @id @default(cuid())
+  componentId         String
+  component           Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
+  
+  // Failure Details
+  mode                String    // open, short, intermittent, degraded, corroded
+  symptoms            String    @db.Text
+  visualIndicators    String?   @db.Text
+  
+  // Impact Analysis
+  directImpacts       Json      // Array of affected systems
+  cascadingEffects    Json      // Array of secondary effects
+  safetyImplications  String?   @db.Text
+  
+  // Bypass/Isolation Effects
+  bypassPossible      Boolean   @default(false)
+  bypassProcedure     String?   @db.Text
+  bypassLimitations   String?   @db.Text
+  isolationPossible   Boolean   @default(false)
+  isolationProcedure  String?   @db.Text
+  isolationEffects    String?   @db.Text
+  
+  // Probability & Priority
+  probability         Float?    // 0-100 percentage
+  severity            String?   // low, medium, high, critical
+  priority            String?   // A, B, C, D
+  
+  // Repair Information
+  repairProcedure     String?   @db.Text
+  estimatedRepairTime Int?      // in minutes
+  requiredTools       Json?     // Array of tool names
+  requiredParts       Json?     // Array of part numbers
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  
+  @@index([componentId])
+  @@index([mode])
+  @@index([severity])
+}
+
+model TestProcedure {
+  id                String    @id @default(cuid())
+  componentId       String
+  component         Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
+  
+  // Procedure Details
+  name              String
+  description       String    @db.Text
+  steps             Json      // Array of step objects
+  
+  // Test Requirements
+  requiredTools     Json      // ["Multimeter (DMM)", "Test Light"]
+  safetyPrecautions Json      // Array of safety requirements
+  prerequisites     String?   @db.Text
+  
+  // Expected Results
+  expectedValues    Json      // {voltage: "28V DC ±2V", resistance: "<0.5Ω"}
+  passCriteria      String    @db.Text
+  failCriteria      String    @db.Text
+  
+  // Test Type
+  testType          String    // visual, continuity, voltage, resistance, functional
+  estimatedTime     Int       // in minutes
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@index([componentId])
+  @@index([testType])
+}
+
+// ============================================
+// ANALYSIS & DIAGNOSTIC MODELS
+// ============================================
+
+model Analysis {
+  id                String    @id @default(cuid())
+  
+  // Related Entities
+  diagramId         String
+  diagram           Diagram   @relation(fields: [diagramId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+  
+  // Problem Description
+  symptom           String    @db.Text
+  additionalContext String?   @db.Text
+  
+  // AI Analysis Results
+  aiResponse        Json      // Complete structured AI response
+  suggestedTests    Json      // Array of test procedures
+  probableCauses    Json      // Ranked list with confidence scores
+  affectedSystems   Json?     // List of impacted systems
+  
+  // Diagnostic Results
+  completedAt       DateTime?
+  successful        Boolean?
+  resolution        String?   @db.Text
+  rootCause         String?
+  
+  // User Feedback
+  helpful           Boolean?
+  accuracy          Int?      // 1-5 rating
+  feedback          String?   @db.Text
+  
+  // Conversation History
+  chatHistory       Json      // Array of messages
+  
+  // Metadata
+  processingTime    Int?      // in milliseconds
+  tokensUsed        Int?
+  
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@index([diagramId])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([successful])
+}
+
+// ============================================
+// SYSTEM & INTEGRATION MODELS
+// ============================================
+
+model SystemIntegration {
+  id              String   @id @default(cuid())
+  
+  // System Details
+  systemName      String
+  systemCode      String?
+  vehicleType     VehicleType
+  
+  // Integration Information
+  connectedSystems Json    // Array of connected system names
+  powerSources     Json    // Array of power distribution points
+  groundPoints     Json    // Array of ground references
+  dataInterfaces   Json?   // CAN bus, ARINC, etc.
+  
+  // Dependencies
+  dependencies     Json    // Systems this depends on
+  dependents       Json    // Systems that depend on this
+  
+  // Emergency Procedures
+  emergencyBypass  String? @db.Text
+  redundancyInfo   String? @db.Text
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@unique([systemName, vehicleType])
+  @@index([vehicleType])
+}
+
+// ============================================
+// NOTIFICATION & ACTIVITY LOG
+// ============================================
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  userId      String
+  action      String   // uploaded, analyzed, viewed, edited
+  entityType  String   // diagram, component, analysis
+  entityId    String
+  details     Json?
+  ipAddress   String?
+  userAgent   String?  @db.Text
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
