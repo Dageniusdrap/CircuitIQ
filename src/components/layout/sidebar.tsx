@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { UserButton } from "@/components/auth/user-button"
@@ -59,12 +60,19 @@ export function Sidebar() {
             <div className="p-6 border-b border-slate-800 flex items-center justify-between">
                 {isOpen && (
                     <Link href="/dashboard" className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-400 rounded-lg flex items-center justify-center">
-                            <Zap size={20} className="text-white" />
+                        <div className="relative w-10 h-10">
+                            <Image
+                                src="/logo.png"
+                                alt="CircuitIQ"
+                                fill
+                                className="object-contain"
+                            />
                         </div>
                         <div>
-                            <h1 className="font-bold text-lg">CircuitIQ</h1>
-                            <p className="text-xs text-slate-400">Pro</p>
+                            <h1 className="font-bold text-lg text-slate-100">CircuitIQ</h1>
+                            <div className="flex items-center gap-1">
+                                <span className="text-[10px] bg-amber-500/10 text-amber-500 border border-amber-500/20 px-1.5 py-0.5 rounded font-medium">GOLD</span>
+                            </div>
                         </div>
                     </Link>
                 )}

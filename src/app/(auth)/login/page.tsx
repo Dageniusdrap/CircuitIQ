@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 import Link from "next/link"
+import Image from "next/image"
 import { LoginForm } from "@/components/auth/login-form"
 import { Zap } from "lucide-react"
 
@@ -13,8 +14,15 @@ export default function LoginPage() {
         <div className="container flex h-screen w-screen flex-col items-center justify-center">
             <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[400px]">
                 <div className="flex flex-col space-y-2 text-center">
-                    <div className="mx-auto w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-400 rounded-lg flex items-center justify-center mb-4">
-                        <Zap size={24} className="text-white" />
+                    <div className="mx-auto flex flex-col items-center mb-4">
+                        <div className="relative w-16 h-16 mb-2">
+                            <Image
+                                src="/logo.png"
+                                alt="CircuitIQ"
+                                fill
+                                className="object-contain"
+                            />
+                        </div>
                     </div>
                     <h1 className="text-2xl font-semibold tracking-tight">
                         Welcome back
