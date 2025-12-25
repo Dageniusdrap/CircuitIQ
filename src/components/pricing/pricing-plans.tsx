@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -17,9 +18,11 @@ import {
     FileText,
     MessageSquare,
     Upload,
-    Brain
+    Brain,
+    Loader2
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 
 interface PricingPlansProps {
     currentPlan?: string
@@ -96,6 +99,51 @@ const PLANS = [
 
 export function PricingPlans({ currentPlan = "FREE" }: PricingPlansProps) {
     const [isYearly, setIsYearly] = useState(true)
+    const [loadingPlan, setLoadingPlan] = useState<string | null>(null)
+    const router = useRouter()
+
+    const handleSubscribe = async (planId: string) => {
+        if (planId === "ENTERPRISE") {
+            // For enterprise, redirect to contact form or email
+            window.location.href = "mailto:sales@circuitiq.com?subject=Enterprise Plan Inquiry"
+            return
+        }
+
+        setLoadingPlan(planId)
+
+        try {
+            const response = await fetch("/api/checkout", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    plan: planId,
+                    isYearly,
+                }),
+            })
+
+            const data = await response.json()
+
+            if (data.error) {
+                if (data.error === "Unauthorized") {
+                    toast.error("Please sign in to subscribe")
+                    router.push("/login?redirect=/pricing")
+                    return
+                }
+                throw new Error(data.error)
+            }
+
+            if (data.url) {
+                window.location.href = data.url
+            }
+        } catch (error) {
+            console.error("Checkout error:", error)
+            toast.error("Failed to start checkout. Please try again.")
+        } finally {
+            setLoadingPlan(null)
+        }
+    }
 
     return (
         <div className="space-y-12">
@@ -202,9 +250,19 @@ export function PricingPlans({ currentPlan = "FREE" }: PricingPlansProps) {
                                         isCurrentPlan && "opacity-50 cursor-not-allowed"
                                     )}
                                     size="lg"
-                                    disabled={isCurrentPlan || plan.disabled}
+                                    disabled={isCurrentPlan || plan.disabled || loadingPlan === plan.id}
+                                    onClick={() => handleSubscribe(plan.id)}
                                 >
-                                    {isCurrentPlan ? "Current Plan" : plan.cta}
+                                    {loadingPlan === plan.id ? (
+                                        <>
+                                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                            Processing...
+                                        </>
+                                    ) : isCurrentPlan ? (
+                                        "Current Plan"
+                                    ) : (
+                                        plan.cta
+                                    )}
                                 </Button>
                             </CardFooter>
                         </Card>

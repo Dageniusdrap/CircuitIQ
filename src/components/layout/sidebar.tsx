@@ -14,6 +14,7 @@ import {
     Search,
     ChevronLeft,
     BookOpen,
+    CreditCard,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
@@ -48,6 +49,11 @@ const routes = [
         label: "Search",
         icon: Search,
         href: "/search",
+    },
+    {
+        label: "Pricing",
+        icon: CreditCard,
+        href: "/pricing",
     },
 ]
 
