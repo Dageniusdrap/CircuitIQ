@@ -49,6 +49,7 @@ export function UploadZone() {
                                 key: file.key,
                                 status: "completed",
                                 progress: 100,
+                                diagramId: (file.serverData as any)?.diagramId
                             }))
 
                             setUploadedFiles(prev => {
@@ -129,9 +130,9 @@ export function UploadZone() {
                                     {file.status === "completed" && (
                                         <div className="flex items-center gap-2">
                                             <CheckCircle className="h-5 w-5 text-emerald-500" />
-                                            <Button asChild size="sm" variant="secondary" className="h-8">
-                                                <Link href="/diagrams">
-                                                    View Library <ArrowRight className="ml-2 h-3 w-3" />
+                                            <Button asChild size="sm" variant="secondary" className="h-8 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                                <Link href={file.diagramId ? `/diagrams/${file.diagramId}` : "/diagrams"}>
+                                                    {file.diagramId ? "Analyze Diagram" : "View Library"} <ArrowRight className="ml-2 h-3 w-3" />
                                                 </Link>
                                             </Button>
                                         </div>

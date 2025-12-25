@@ -6,6 +6,7 @@ import GitHubProvider from "next-auth/providers/github"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/db"
 import { UserRole } from "@prisma/client"
+import { authConfig } from "./auth.config"
 
 declare module "next-auth" {
     interface Session {
@@ -22,13 +23,10 @@ export const {
     signIn,
     signOut,
 } = NextAuth({
+    ...authConfig,
     adapter: PrismaAdapter(prisma),
     session: {
         strategy: "jwt",
-    },
-    pages: {
-        signIn: "/login",
-        error: "/login",
     },
     providers: [
         GoogleProvider({
@@ -82,6 +80,7 @@ export const {
         }),
     ],
     callbacks: {
+        ...authConfig.callbacks,
         async session({ token, session }) {
             if (token.sub && session.user) {
                 session.user.id = token.sub

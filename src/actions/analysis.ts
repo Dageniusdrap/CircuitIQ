@@ -43,7 +43,7 @@ export async function startDiagnosis(diagramId: string, symptom: string) {
     const context = `
     Vehicle: ${diagram.manufacturer} ${diagram.model} (${diagram.year})
     System: ${diagram.system}
-    Components: ${diagram.components.map((c: any) => `${c.name} (${c.type})`).join(", ")}
+    Components: ${diagram.components.map((c: { name: string; type: string }) => `${c.name} (${c.type})`).join(", ")}
     User Complaint: ${symptom}
     `
 

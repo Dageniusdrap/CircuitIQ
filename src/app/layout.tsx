@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { AuthProvider } from "@/components/providers/auth-provider"
+import { ThemeProvider } from "@/components/providers/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 import "./globals.css"
 
@@ -11,10 +12,6 @@ export const metadata: Metadata = {
   description: "Professional electrical troubleshooting for aircraft, automotive, and marine systems",
 }
 
-import { ThemeProvider } from "@/components/providers/theme-provider"
-
-// ... imports
-
 export default function RootLayout({
   children,
 }: {
@@ -22,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={inter.className} suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"

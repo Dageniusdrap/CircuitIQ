@@ -34,8 +34,9 @@ export const ourFileRouter = {
             console.log("File key:", file.key)
 
             // Create initial diagram record with PENDING status
+            let diagramId = "";
             try {
-                await prisma.diagram.create({
+                const diagram = await prisma.diagram.create({
                     data: {
                         title: file.name,
                         fileUrl: file.url,
@@ -43,16 +44,15 @@ export const ourFileRouter = {
                         fileType: file.type,
                         fileSize: file.size,
                         status: "PENDING",
-                        vehicleType: "AIRCRAFT", // Default, will be updated later
+                        vehicleType: "AIRCRAFT",
                         manufacturer: "Unknown",
                         model: "Unknown",
                         system: "Unknown",
                         uploadedById: metadata.userId,
                     },
                 })
+                diagramId = diagram.id;
 
-                // Here you would typically trigger a background job to process the diagram
-                // For now, we'll just log it
                 console.log("Diagram record created, ready for AI processing")
             } catch (error) {
                 console.error("Error creating diagram record:", error)
@@ -62,6 +62,7 @@ export const ourFileRouter = {
                 uploadedBy: metadata.userId,
                 fileUrl: file.url,
                 fileKey: file.key,
+                diagramId: diagramId
             }
         }),
 } satisfies FileRouter
