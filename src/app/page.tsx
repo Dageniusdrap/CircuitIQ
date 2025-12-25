@@ -4,11 +4,23 @@ import { Zap, Upload, MessageSquare, Layers, LucideIcon } from "lucide-react"
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900">
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Background Image with Overlay */}
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: 'url("/images/hero-bg.png")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-[2px]" />
+      </div>
+
       {/* Hero Section */}
-      <div className="container mx-auto px-4 py-20">
+      <div className="relative z-10 container mx-auto px-4 py-20">
         <div className="text-center space-y-6 max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-3 bg-blue-600/10 border border-blue-600/20 rounded-full px-6 py-2">
+          <div className="inline-flex items-center gap-3 bg-blue-500/10 border border-blue-500/20 rounded-full px-6 py-2 backdrop-blur-md">
             <Zap size={20} className="text-blue-400" />
             <span className="text-blue-400 font-medium">AI-Powered Diagnostics</span>
           </div>
