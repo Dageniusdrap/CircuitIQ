@@ -13,6 +13,7 @@ import {
     MessageSquare,
     Search,
     ChevronLeft,
+    BookOpen,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
@@ -37,6 +38,11 @@ const routes = [
         label: "Diagnostics",
         icon: MessageSquare,
         href: "/diagnostics",
+    },
+    {
+        label: "Procedures",
+        icon: BookOpen,
+        href: "/procedures",
     },
     {
         label: "Search",
