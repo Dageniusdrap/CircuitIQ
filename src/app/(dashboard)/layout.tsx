@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
 import { Sidebar } from "@/components/layout/sidebar"
 import { Header } from "@/components/layout/header"
+import { CommandPalette } from "@/components/ui/command-palette"
 
 export default async function DashboardLayout({
     children,
@@ -16,6 +17,7 @@ export default async function DashboardLayout({
 
     return (
         <div className="flex h-screen bg-slate-900">
+            <CommandPalette />
             <Sidebar />
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Header />
