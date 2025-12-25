@@ -5,7 +5,8 @@ import { Diagram } from "@prisma/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Folder, FileText, ChevronRight, Car, Plane, Ship, Search, Zap } from "lucide-react"
+import { EmptyState } from "@/components/ui/empty-state"
+import { Folder, FileText, ChevronRight, Car, Plane, Ship, Search, Zap, Upload } from "lucide-react"
 import { ATA_CHAPTERS } from "@/lib/constants"
 import Link from "next/link"
 
@@ -117,12 +118,13 @@ export function LibraryBrowser({ diagrams }: LibraryBrowserProps) {
             </div>
 
             {categoryDiagrams.length === 0 && (
-                <div className="text-center py-12 text-slate-500">
-                    <p>No manuals found in this category.</p>
-                    <Button variant="link" className="mt-2 text-blue-400">
-                        Upload a manual to get started
-                    </Button>
-                </div>
+                <EmptyState
+                    icon={Upload}
+                    title="No diagrams yet"
+                    description={`Upload your first ${selectedCategory === "aircraft" ? "aviation" : selectedCategory} wiring diagram to get started with AI-powered analysis.`}
+                    actionLabel="Upload Diagram"
+                    actionHref="/upload"
+                />
             )}
         </div>
     )
