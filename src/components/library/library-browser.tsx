@@ -22,7 +22,7 @@ export function LibraryBrowser({ diagrams }: LibraryBrowserProps) {
         d.vehicleType.toLowerCase() === selectedCategory.toLowerCase() ||
         (selectedCategory === "automotive" && d.vehicleType === "AUTOMOTIVE") ||
         (selectedCategory === "aircraft" && d.vehicleType === "AIRCRAFT") ||
-        (selectedCategory === "others" && d.vehicleType === "OTHER")
+        (selectedCategory === "electric" && d.vehicleType === "ELECTRIC_VEHICLE")
     )
 
     // Group by ATA Chapter (for Aircraft) or System (for others)
@@ -62,11 +62,11 @@ export function LibraryBrowser({ diagrams }: LibraryBrowserProps) {
                         <Ship className="h-4 w-4" /> Marine
                     </Button>
                     <Button
-                        variant={selectedCategory === "others" ? "default" : "outline"}
-                        onClick={() => setSelectedCategory("others")}
+                        variant={selectedCategory === "electric" ? "default" : "outline"}
+                        onClick={() => setSelectedCategory("electric")}
                         className="gap-2"
                     >
-                        <Zap className="h-4 w-4" /> Others
+                        <Zap className="h-4 w-4" /> Electric Cars
                     </Button>
                 </div>
 

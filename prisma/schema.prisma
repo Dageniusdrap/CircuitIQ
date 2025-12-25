@@ -20,7 +20,7 @@ enum VehicleType {
   AIRCRAFT
   AUTOMOTIVE
   MARINE
-  OTHER
+  ELECTRIC_VEHICLE
 }
 
 // Processing status
