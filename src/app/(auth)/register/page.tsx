@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import Link from "next/link"
 import Image from "next/image"
 import { RegisterForm } from "@/components/auth/register-form"
-import { Zap } from "lucide-react"
+
 
 export const metadata: Metadata = {
     title: "Register | CircuitIQ",

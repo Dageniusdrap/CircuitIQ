@@ -10,7 +10,7 @@ export const ourFileRouter = {
         image: { maxFileSize: "16MB", maxFileCount: 20 },
         blob: { maxFileSize: "64MB", maxFileCount: 10 }, // For DWG and others
     })
-        .middleware(async ({ req }) => {
+        .middleware(async () => {
             const session = await auth()
 
             if (!session?.user) {

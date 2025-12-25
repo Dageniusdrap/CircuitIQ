@@ -7,19 +7,10 @@ import { nanoid } from "nanoid"
 import {
     Send,
     Mic,
-    Camera,
     Image as ImageIcon,
     Loader2,
-    Lightbulb,
-    Wrench,
-    AlertCircle,
-    CheckCircle,
-    ThumbsUp,
-    ThumbsDown,
-    RotateCcw,
     Zap,
-    MessageSquare,
-    FileText,
+    RotateCcw
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -28,15 +19,29 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { toast } from "sonner"
 
+interface DiagnosticData {
+    currentHypothesis: string
+    confidence: number
+}
+
+interface TestProcedure {
+    step: string
+    instruction: string
+}
+
+interface ProgressUpdate {
+    status: string
+}
+
 interface Message {
     id: string
     role: "user" | "assistant"
     content: string
     tone?: string
     timestamp: string
-    diagnosticData?: any
-    testProcedure?: any
-    progressUpdate?: any
+    diagnosticData?: DiagnosticData
+    testProcedure?: TestProcedure
+    progressUpdate?: ProgressUpdate
     quickSuggestions?: string[]
 }
 
@@ -51,7 +56,7 @@ interface TeammateChatProps {
     onComponentHighlight?: (components: string[]) => void
 }
 
-export function TeammateChat({ diagramId, vehicleInfo, onComponentHighlight }: TeammateChatProps) {
+export function TeammateChat({ vehicleInfo, onComponentHighlight }: TeammateChatProps) {
     const [sessionId] = useState(() => nanoid())
     const [messages, setMessages] = useState<Message[]>([
         {
@@ -129,8 +134,7 @@ export function TeammateChat({ diagramId, vehicleInfo, onComponentHighlight }: T
             if (data.highlightComponents && onComponentHighlight) {
                 onComponentHighlight(data.highlightComponents)
             }
-        } catch (error) {
-            console.error("Error communicating:", error)
+        } catch {
             toast.error("Connection issue. Let me try to reconnect...")
 
             // Add error recovery message
@@ -194,7 +198,7 @@ export function TeammateChat({ diagramId, vehicleInfo, onComponentHighlight }: T
                     timestamp: data.timestamp,
                 },
             ])
-        } catch (error) {
+        } catch {
             toast.error("Couldn't analyze photo. Try again?")
         } finally {
             setIsTyping(false)
@@ -213,6 +217,7 @@ export function TeammateChat({ diagramId, vehicleInfo, onComponentHighlight }: T
             return
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const recognition = new (window as any).webkitSpeechRecognition()
         recognition.continuous = false
         recognition.interimResults = false
@@ -220,6 +225,7 @@ export function TeammateChat({ diagramId, vehicleInfo, onComponentHighlight }: T
         recognition.onstart = () => setIsListening(true)
         recognition.onend = () => setIsListening(false)
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         recognition.onresult = (event: any) => {
             const transcript = event.results[0][0].transcript
             setInput((prev) => prev + " " + transcript)
@@ -352,8 +358,8 @@ export function TeammateChat({ diagramId, vehicleInfo, onComponentHighlight }: T
                             {messages[messages.length - 1]?.diagnosticData?.currentHypothesis ? (
                                 <div>
                                     <p className="font-medium text-slate-200">Current Hypothesis:</p>
-                                    <p>{messages[messages.length - 1].diagnosticData.currentHypothesis}</p>
-                                    <Progress className="mt-2" value={messages[messages.length - 1].diagnosticData.confidence} />
+                                    <p>{messages[messages.length - 1]?.diagnosticData?.currentHypothesis}</p>
+                                    <Progress className="mt-2" value={messages[messages.length - 1]?.diagnosticData?.confidence || 0} />
                                 </div>
                             ) : (
                                 "Tracking progress..."

@@ -75,7 +75,7 @@ export default async function DashboardPage() {
 
             {/* Recent Activity */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <RecentAnalyses userId={session?.user?.id!} />
+                <RecentAnalyses userId={session?.user?.id || ""} />
                 <QuickActions />
             </div>
         </div>

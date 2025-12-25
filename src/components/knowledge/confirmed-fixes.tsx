@@ -2,9 +2,19 @@
 
 import { useState, useEffect } from "react"
 import { getConfirmedFixes } from "@/actions/knowledge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ThumbsUp, Wrench, Clock, DollarSign, CheckCircle2 } from "lucide-react"
+import { Wrench, Clock, DollarSign, CheckCircle2 } from "lucide-react"
+
+interface Fix {
+    id: string
+    componentName: string
+    votes: number
+    fixDescription: string
+    averageTime: number
+    averageCost: number
+    difficulty: string
+}
 
 interface ConfirmedFixesPanelProps {
     symptom?: string
@@ -12,14 +22,24 @@ interface ConfirmedFixesPanelProps {
 }
 
 export function ConfirmedFixesPanel({ symptom, vehicleModel }: ConfirmedFixesPanelProps) {
-    const [fixes, setFixes] = useState<any[]>([])
+    const [fixes, setFixes] = useState<Fix[]>([])
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
         if (symptom && vehicleModel) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setLoading(true)
             getConfirmedFixes(symptom, vehicleModel).then(data => {
-                setFixes(data)
+                const mappedFixes: Fix[] = data.map(f => ({
+                    id: f.id,
+                    componentName: f.componentName,
+                    votes: f.votes,
+                    fixDescription: f.fixDescription,
+                    averageTime: f.averageTime || 0,
+                    averageCost: f.averageCost || 0,
+                    difficulty: f.difficulty || "Unknown"
+                }))
+                setFixes(mappedFixes)
                 setLoading(false)
             })
         }

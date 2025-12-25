@@ -12,7 +12,7 @@ export default async function DiagnosticsPage({
 }: {
     searchParams: { diagramId?: string }
 }) {
-    let vehicleInfo = { make: "Generic", model: "Vehicle", type: "aircraft" as const }
+    let vehicleInfo: { make: string, model: string, type: "aircraft" | "automotive" | "marine" } = { make: "Generic", model: "Vehicle", type: "aircraft" }
     let diagramContext = null
 
     if (searchParams.diagramId) {
@@ -24,7 +24,7 @@ export default async function DiagnosticsPage({
             vehicleInfo = {
                 make: diagram.manufacturer,
                 model: diagram.model,
-                type: diagram.vehicleType as any // simplified casting
+                type: (diagram.vehicleType.toLowerCase() as "aircraft" | "automotive" | "marine") || "aircraft"
             }
             diagramContext = diagram
         }

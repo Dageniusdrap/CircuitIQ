@@ -8,10 +8,22 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { AlertCircle, Bot, Send, User, Wrench, CheckCircle2, ChevronRight } from "lucide-react"
+import { AlertCircle, Bot, Send, User, Wrench } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+
+interface ProbableCause {
+    cause: string
+    likelihood: string
+    reason: string
+}
+
+interface SuggestedTest {
+    step: number
+    title: string
+    instruction: string
+    expected?: string
+}
 
 interface DiagnosticsWizardProps {
     diagramId: string
@@ -23,8 +35,8 @@ export function DiagnosticsWizard({ diagramId, vehicleInfo }: DiagnosticsWizardP
     const [isAnalyzing, setIsAnalyzing] = useState(false)
     const [analysisId, setAnalysisId] = useState<string | null>(null)
     const [history, setHistory] = useState<{ role: string, content: string }[]>([])
-    const [probableCauses, setProbableCauses] = useState<any[]>([])
-    const [suggestedTests, setSuggestedTests] = useState<any[]>([])
+    const [probableCauses, setProbableCauses] = useState<ProbableCause[]>([])
+    const [suggestedTests, setSuggestedTests] = useState<SuggestedTest[]>([])
     const [newMessage, setNewMessage] = useState("")
     const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -37,8 +49,8 @@ export function DiagnosticsWizard({ diagramId, vehicleInfo }: DiagnosticsWizardP
             setAnalysisId(result.analysisId)
             setProbableCauses(result.initialResponse.probableCauses || [])
             setSuggestedTests(result.initialResponse.suggestedTests || [])
-            setHistory(result.history)
-        } catch (error) {
+            setHistory(result.history as { role: string; content: string }[])
+        } catch {
             toast.error("Failed to start diagnosis. Please try again.")
         } finally {
             setIsAnalyzing(false)
@@ -54,8 +66,8 @@ export function DiagnosticsWizard({ diagramId, vehicleInfo }: DiagnosticsWizardP
 
         try {
             const result = await continueDiagnosis(analysisId, userMsg)
-            setHistory(result.history)
-        } catch (error) {
+            setHistory(result.history as { role: string; content: string }[])
+        } catch {
             toast.error("Failed to send message")
         }
     }

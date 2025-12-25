@@ -3,7 +3,9 @@ import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
-export function DiagramCard({ diagram }: { diagram: any }) {
+import { Diagram } from "@prisma/client"
+
+export function DiagramCard({ diagram }: { diagram: Diagram }) {
     return (
         <Card>
             <CardHeader>

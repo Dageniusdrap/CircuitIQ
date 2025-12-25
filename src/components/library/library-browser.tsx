@@ -5,10 +5,8 @@ import { Diagram } from "@prisma/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Folder, FileText, ChevronRight, Car, Plane, Ship, Search } from "lucide-react"
-import { ATA_CHAPTERS, VEHICLE_CATEGORIES } from "@/lib/constants"
+import { ATA_CHAPTERS } from "@/lib/constants"
 import Link from "next/link"
 
 interface LibraryBrowserProps {

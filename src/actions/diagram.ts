@@ -3,7 +3,7 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 import { revalidatePath } from "next/cache"
-import { VehicleType, ProcessingStatus } from "@prisma/client"
+import { VehicleType, Prisma } from "@prisma/client"
 
 export async function updateDiagramMetadata(
     diagramId: string,
@@ -83,7 +83,7 @@ export async function getDiagrams(filters?: {
     }
 
     try {
-        const where: any = {}
+        const where: Prisma.DiagramWhereInput = {}
 
         if (filters?.vehicleType) {
             where.vehicleType = filters.vehicleType

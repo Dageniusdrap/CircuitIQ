@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { EngineerTeammate } from "@/lib/ai/engineer-teammate"
-import { nanoid } from "nanoid"
+
 
 // Store active teammate sessions (use Redis in production)
 // Note: In serverless, this map will be reset on cold start. 

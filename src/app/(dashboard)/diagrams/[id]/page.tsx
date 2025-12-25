@@ -103,7 +103,7 @@ export default async function DiagramDetailPage({
                             <Card>
                                 <CardContent className="p-0">
                                     <div className="divide-y divide-slate-800">
-                                        {diagram.components.map((comp: any) => (
+                                        {diagram.components.map((comp) => (
                                             <div key={comp.id} className="p-4 flex justify-between items-center hover:bg-slate-800/50">
                                                 <div>
                                                     <p className="font-medium text-slate-200">{comp.name}</p>
@@ -165,8 +165,8 @@ export default async function DiagramDetailPage({
                         <CardContent className="p-4">
                             <WireTracer
                                 components={diagram.components}
-                                // @ts-ignore
-                                connections={diagram.components.flatMap((c: any) => c.connectionsTo || [])}
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                connections={diagram.components.flatMap((c) => (c as any).connectionsTo || [])}
                             />
                         </CardContent>
                     </Card>

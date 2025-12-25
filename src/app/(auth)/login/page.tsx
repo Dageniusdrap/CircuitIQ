@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import Link from "next/link"
 import Image from "next/image"
 import { LoginForm } from "@/components/auth/login-form"
-import { Zap } from "lucide-react"
+
 
 export const metadata: Metadata = {
     title: "Login | CircuitIQ",
@@ -33,7 +33,7 @@ export default function LoginPage() {
                 </div>
                 <LoginForm />
                 <p className="px-8 text-center text-sm text-muted-foreground">
-                    Don't have an account?{" "}
+                    Don&apos;t have an account?{" "}
                     <Link
                         href="/register"
                         className="underline underline-offset-4 hover:text-primary"

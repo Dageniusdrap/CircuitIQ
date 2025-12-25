@@ -4,20 +4,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import { useTheme } from "next-themes"
 import {
-    Bell,
     Moon,
     Sun,
-    Smartphone,
     Shield,
     Zap,
     Mail,
     Globe,
     Award,
-    CreditCard,
     Cpu,
     CheckCircle2
 } from "lucide-react"
@@ -31,10 +29,15 @@ interface SettingsDashboardProps {
 export function SettingsDashboard({ twoFactorEnabled }: SettingsDashboardProps) {
     const [emailDetails, setEmailDetails] = useState(true)
     const { setTheme, theme } = useTheme()
+    const [sessionId, setSessionId] = useState("")
 
     // Avoid hydration mismatch
     const [mounted, setMounted] = useState(false)
-    useEffect(() => setMounted(true), [])
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setMounted(true)
+        setSessionId(Date.now().toString().slice(-8))
+    }, [])
 
     const handleEmailToggle = (checked: boolean) => {
         setEmailDetails(checked)
@@ -238,21 +241,10 @@ export function SettingsDashboard({ twoFactorEnabled }: SettingsDashboardProps) 
 
                     <div className="text-center text-xs text-slate-600 font-mono">
                         Build ID: v1.0.0-gold-rc1<br />
-                        Session: {Date.now().toString().slice(-8)}
+                        Session: {sessionId}
                     </div>
                 </div>
             </div>
         </div>
-    )
-}
-
-function Badge({ children, className, variant }: any) {
-    return (
-        <span className={cn(
-            "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-            className
-        )}>
-            {children}
-        </span>
     )
 }

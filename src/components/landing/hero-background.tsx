@@ -3,11 +3,25 @@
 import { motion } from "framer-motion"
 import { useEffect, useState } from "react"
 
+interface Particle {
+    id: number
+    initialX: number
+    initialY: number
+    initialOpacity: number
+    initialScale: number
+    targetY: number
+    duration: number
+    delay: number
+    size: number
+}
+
 export function HeroBackground() {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const [mounted, setMounted] = useState(false)
+    const [particles, setParticles] = useState<Particle[]>([])
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true)
         const handleMouseMove = (e: MouseEvent) => {
             setMousePosition({
@@ -15,6 +29,19 @@ export function HeroBackground() {
                 y: e.clientY / window.innerHeight,
             })
         }
+
+        const newParticles = [...Array(20)].map((_, i) => ({
+            id: i,
+            initialX: Math.random() * 100,
+            initialY: Math.random() * 100,
+            initialOpacity: Math.random() * 0.5 + 0.2,
+            initialScale: Math.random() * 0.5 + 0.5,
+            targetY: Math.random() * -100,
+            duration: Math.random() * 10 + 10,
+            delay: Math.random() * 5,
+            size: Math.random() * 4
+        }))
+        setParticles(newParticles)
 
         window.addEventListener("mousemove", handleMouseMove)
         return () => window.removeEventListener("mousemove", handleMouseMove)
@@ -58,29 +85,29 @@ export function HeroBackground() {
 
             {/* Animated Particles/Sparks */}
             <div className="absolute inset-0 z-20 pointer-events-none">
-                {mounted && [...Array(20)].map((_, i) => (
+                {mounted && particles.map((p) => (
                     <motion.div
-                        key={i}
+                        key={p.id}
                         className="absolute bg-blue-500 rounded-full"
                         initial={{
-                            x: Math.random() * 100 + "%",
-                            y: Math.random() * 100 + "%",
-                            opacity: Math.random() * 0.5 + 0.2,
-                            scale: Math.random() * 0.5 + 0.5,
+                            x: p.initialX + "%",
+                            y: p.initialY + "%",
+                            opacity: p.initialOpacity,
+                            scale: p.initialScale,
                         }}
                         animate={{
-                            y: [null, Math.random() * -100 + "%"],
+                            y: [null, p.targetY + "%"],
                             opacity: [null, 0],
                         }}
                         transition={{
-                            duration: Math.random() * 10 + 10,
+                            duration: p.duration,
                             repeat: Infinity,
                             ease: "linear",
-                            delay: Math.random() * 5,
+                            delay: p.delay,
                         }}
                         style={{
-                            width: Math.random() * 4 + "px",
-                            height: Math.random() * 4 + "px",
+                            width: p.size + "px",
+                            height: p.size + "px",
                         }}
                     />
                 ))}

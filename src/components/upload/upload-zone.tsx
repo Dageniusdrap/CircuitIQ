@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { UploadButton, UploadDropzone } from "@/lib/uploadthing"
+import { UploadDropzone } from "@/lib/uploadthing"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -21,7 +21,6 @@ interface UploadedFile {
 
 export function UploadZone() {
     const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
-    const [isUploading, setIsUploading] = useState(false)
 
     return (
         <div className="space-y-6">
@@ -49,7 +48,7 @@ export function UploadZone() {
                                 key: file.key,
                                 status: "completed",
                                 progress: 100,
-                                diagramId: (file.serverData as any)?.diagramId
+                                diagramId: (file.serverData as { diagramId?: string })?.diagramId
                             }))
 
                             setUploadedFiles(prev => {
@@ -57,16 +56,13 @@ export function UploadZone() {
                                 const filtered = prev.filter(f => f.status !== "uploading")
                                 return [...filtered, ...newFiles]
                             })
-                            setIsUploading(false)
                         }}
                         onUploadError={(error: Error) => {
                             toast.error(`ERROR! ${error.message}`)
-                            setIsUploading(false)
                             setUploadedFiles(prev => prev.map(f => f.status === "uploading" ? { ...f, status: "error" } : f))
                         }}
                         onUploadBegin={(name) => {
                             console.log("Uploading: ", name)
-                            setIsUploading(true)
 
                             // Add file to list with uploading status
                             setUploadedFiles(prev => [...prev, {

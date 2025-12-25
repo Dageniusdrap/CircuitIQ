@@ -3,8 +3,7 @@
 import { useState } from "react"
 import { Component, ComponentConnection } from "@prisma/client"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Zap, AlertCircle, ArrowRight, RotateCcw } from "lucide-react"
+import { Zap, AlertCircle, RotateCcw } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
 interface WireTracerProps {

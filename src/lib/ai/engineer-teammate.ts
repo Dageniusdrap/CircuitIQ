@@ -331,7 +331,7 @@ Look at this photo and respond like their teammate would.`,
                 tone: "observant",
                 timestamp: new Date().toISOString(),
             }
-        } catch (error) {
+        } catch {
             return {
                 message: "Having trouble loading that photo. Can you describe what you're seeing?",
                 tone: "helpful",
@@ -370,7 +370,7 @@ Use analogies if helpful. Keep it conversational.`
                 tone: "educational",
                 timestamp: new Date().toISOString(),
             }
-        } catch (error) {
+        } catch {
             return {
                 message: "Good question. Let me think about how to explain this clearly...",
                 tone: "thoughtful",

@@ -3,12 +3,12 @@
 import { useState, useTransition } from "react"
 import { globalSearch, SearchResult } from "@/actions/search"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+
 import { Search, FileText, Settings, Loader2, ArrowRight } from "lucide-react"
 import Link from "next/link"
-import { useDebounce } from "@/hooks/use-debounce"
+
 
 export function SearchInterface() {
     const [query, setQuery] = useState("")
@@ -79,7 +79,7 @@ export function SearchInterface() {
                     ))
                 ) : query.length > 1 && !isPending ? (
                     <div className="text-center py-12">
-                        <p className="text-slate-400">No results found for "{query}"</p>
+                        <p className="text-slate-400">No results found for &quot;{query}&quot;</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 opacity-50">

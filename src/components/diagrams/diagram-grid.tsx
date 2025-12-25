@@ -1,7 +1,7 @@
 import { Diagram } from "@prisma/client"
 import { DiagramCard } from "./diagram-card"
 
-export function DiagramGrid({ diagrams }: { diagrams: any[] }) {
+export function DiagramGrid({ diagrams }: { diagrams: Diagram[] }) {
     if (diagrams.length === 0) {
         return (
             <div className="text-center py-10">

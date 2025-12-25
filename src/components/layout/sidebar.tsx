@@ -12,7 +12,6 @@ import {
     FileText,
     MessageSquare,
     Search,
-    Zap,
     Menu,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"

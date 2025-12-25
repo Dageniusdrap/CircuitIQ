@@ -1,5 +1,6 @@
 import { openai } from "./openai"
 import { prisma } from "@/lib/db"
+import { VehicleType } from "@prisma/client"
 
 interface ComponentData {
     name: string
@@ -7,7 +8,7 @@ interface ComponentData {
     type: string
     location?: string
     function: string
-    specifications?: Record<string, any>
+    specifications?: Record<string, unknown>
     xPosition?: number
     yPosition?: number
 }
@@ -18,6 +19,20 @@ interface ConnectionData {
     wireColor?: string
     wireGauge?: string
     signalType?: string
+}
+
+interface VehicleInfo {
+    type?: string
+    manufacturer?: string
+    model?: string
+    system?: string
+}
+
+interface AIParsedData {
+    components?: ComponentData[]
+    connections?: ConnectionData[]
+    systems?: string[]
+    vehicleInfo?: VehicleInfo
 }
 
 interface AnalysisResult {
@@ -113,7 +128,7 @@ Be thorough and extract as much detail as possible. For component positions, est
         console.log("Raw AI Response:", content)
 
         // Parse the JSON response
-        let parsedData: any
+        let parsedData: AIParsedData
         try {
             // Remove markdown code blocks if present
             const cleanedContent = content
@@ -132,14 +147,15 @@ Be thorough and extract as much detail as possible. For component positions, est
             await prisma.diagram.update({
                 where: { id: diagramId },
                 data: {
-                    vehicleType: parsedData.vehicleInfo.type?.toUpperCase() || "AIRCRAFT",
+                    vehicleType: (parsedData.vehicleInfo.type?.toUpperCase() || "AIRCRAFT") as VehicleType,
                     manufacturer: parsedData.vehicleInfo.manufacturer || "Unknown",
                     model: parsedData.vehicleInfo.model || "Unknown",
                     system: parsedData.vehicleInfo.system || "Unknown",
-                    aiExtractedData: parsedData,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    aiExtractedData: parsedData as any,
                     status: "COMPLETED",
                     processingCompletedAt: new Date(),
-                    confidence: calculateConfidence(parsedData), // Fixed: Was calling calculateConfidence without implementation in scope
+                    confidence: calculateConfidence(parsedData),
                 },
             })
         }
@@ -220,32 +236,47 @@ Be thorough and extract as much detail as possible. For component positions, est
     }
 }
 
-function calculateConfidence(data: any): number {
+function calculateConfidence(data: AIParsedData | ComponentData): number {
     // Simple confidence calculation based on data completeness
     let score = 0
     let maxScore = 0
 
-    if (data.components) {
-        maxScore += 40
-        score += Math.min(data.components.length * 5, 40)
-    }
+    // Check if it's the full data object
+    if ('components' in data) {
+        // It's AIParsedData. 
+        // We use type assertion because 'in' check with optional properties is tricky in TS
+        const parsed = data as AIParsedData;
 
-    if (data.connections) {
-        maxScore += 30
-        score += Math.min(data.connections.length * 5, 30)
-    }
+        if (parsed.components) {
+            maxScore += 40
+            score += Math.min(parsed.components.length * 5, 40)
+        }
 
-    if (data.systems) {
-        maxScore += 15
-        score += Math.min(data.systems.length * 5, 15)
-    }
+        if (parsed.connections) {
+            maxScore += 30
+            score += Math.min(parsed.connections.length * 5, 30)
+        }
 
-    if (data.vehicleInfo) {
-        maxScore += 15
-        const info = data.vehicleInfo
-        if (info.manufacturer && info.manufacturer !== "Unknown") score += 5
-        if (info.model && info.model !== "Unknown") score += 5
-        if (info.system && info.system !== "Unknown") score += 5
+        if (parsed.systems) {
+            maxScore += 15
+            score += Math.min(parsed.systems.length * 5, 15)
+        }
+
+        if (parsed.vehicleInfo) {
+            maxScore += 15
+            const info = parsed.vehicleInfo
+            if (info.manufacturer && info.manufacturer !== "Unknown") score += 5
+            if (info.model && info.model !== "Unknown") score += 5
+            if (info.system && info.system !== "Unknown") score += 5
+        }
+    } else {
+        // It's a component
+        const comp = data as ComponentData
+        maxScore = 100
+        score = 60 // Base confidence for AI extraction
+        if (comp.partNumber) score += 10
+        if (comp.location) score += 10
+        if (comp.specifications && Object.keys(comp.specifications).length > 0) score += 20
     }
 
     return maxScore > 0 ? (score / maxScore) * 100 : 50

@@ -35,7 +35,7 @@ export function TwoFactorDialog({ status }: TwoFactorDialogProps) {
             const data = await generateTwoFactorSecret()
             setQrData(data)
             setStep("QR")
-        } catch (error) {
+        } catch {
             toast.error("Failed to generate 2FA secret")
         } finally {
             setIsLoading(false)
@@ -53,7 +53,7 @@ export function TwoFactorDialog({ status }: TwoFactorDialogProps) {
             setStep("INTRO")
             setToken("")
             // Force text reload/update if needed by parent, but server action revalidates
-        } catch (error) {
+        } catch {
             toast.error("Invalid code. Please try again.")
         } finally {
             setIsLoading(false)
@@ -66,7 +66,7 @@ export function TwoFactorDialog({ status }: TwoFactorDialogProps) {
             await disableTwoFactor()
             toast.success("Two-factor authentication disabled")
             setIsOpen(false)
-        } catch (error) {
+        } catch {
             toast.error("Failed to disable 2FA")
         } finally {
             setIsLoading(false)
