@@ -25,7 +25,9 @@ interface VehicleInfo {
     type?: string
     manufacturer?: string
     model?: string
+    year?: string
     system?: string
+    systemCode?: string
 }
 
 interface AIParsedData {
@@ -104,9 +106,16 @@ Provide responses in valid JSON format only, with no additional text or markdown
     "type": "aircraft|automotive|marine|electric_vehicle",
     "manufacturer": "manufacturer if visible",
     "model": "model if visible",
-    "system": "main system name"
+    "year": "year if visible",
+    "system": "main system name",
+    "systemCode": "ATA chapter code (e.g., 24, 32) for aircraft, or system abbreviation for others"
   }
 }
+
+IMPORTANT CLASSIFICATION RULES:
+- FOR AIRCRAFT: Use ATA iSpec 2200 chapter codes (e.g., "24" for Electrical Power, "32" for Landing Gear, "33" for Lights, "34" for Navigation)
+- FOR AUTOMOTIVE/EV: Use system names (e.g., "Engine Management", "Battery System", "Charging System", "HVAC")
+- FOR MARINE: Use system names (e.g., "Navigation", "Bilge Pumps", "Power Distribution")
 
 Be thorough and extract as much detail as possible. For component positions, estimate percentage-based coordinates.`,
                         },
@@ -150,7 +159,9 @@ Be thorough and extract as much detail as possible. For component positions, est
                     vehicleType: (parsedData.vehicleInfo.type?.toUpperCase() || "AIRCRAFT") as VehicleType,
                     manufacturer: parsedData.vehicleInfo.manufacturer || "Unknown",
                     model: parsedData.vehicleInfo.model || "Unknown",
+                    year: parsedData.vehicleInfo.year ? parseInt(parsedData.vehicleInfo.year, 10) : null,
                     system: parsedData.vehicleInfo.system || "Unknown",
+                    systemCode: parsedData.vehicleInfo.systemCode || null,
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     aiExtractedData: parsedData as any,
                     status: "COMPLETED",
