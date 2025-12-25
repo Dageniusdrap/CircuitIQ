@@ -13,8 +13,13 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { LogOut, Settings, User } from "lucide-react"
 import Link from "next/link"
+import { cn } from "@/lib/utils"
 
-export function UserButton() {
+interface UserButtonProps {
+    isOpen?: boolean
+}
+
+export function UserButton({ isOpen = true }: UserButtonProps) {
     const user = useCurrentUser()
 
     const handleLogout = () => {
@@ -24,20 +29,35 @@ export function UserButton() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-800 transition-colors">
-                    <Avatar className="h-8 w-8">
+                <button className={cn(
+                    "flex items-center gap-3 p-2 rounded-xl transition-all outline-none group w-full",
+                    "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                    !isOpen && "justify-center"
+                )}>
+                    <Avatar className="h-9 w-9 border-2 border-sidebar-border group-hover:border-primary/50 transition-colors">
                         <AvatarImage src={user?.image || ""} alt={user?.name || ""} />
-                        <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-400">
+                        <AvatarFallback className="bg-gradient-to-br from-primary to-blue-600 text-white font-semibold">
                             {user?.name?.charAt(0).toUpperCase() || "U"}
                         </AvatarFallback>
                     </Avatar>
-                    <div className="text-left">
-                        <p className="text-sm font-medium">{user?.name}</p>
-                        <p className="text-xs text-slate-400">{user?.role}</p>
-                    </div>
+
+                    {isOpen && (
+                        <div className="text-left flex-1 overflow-hidden">
+                            <p className="text-sm font-semibold truncate text-foreground group-hover:text-primary transition-colors">
+                                {user?.name || "User"}
+                            </p>
+                            <p className="text-xs text-muted-foreground truncate font-medium">
+                                {user?.role || "Team Member"}
+                            </p>
+                        </div>
+                    )}
+
+                    {isOpen && (
+                        <Settings size={16} className="text-muted-foreground opacity-0 group-hover:opacity-50 transition-opacity" />
+                    )}
                 </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuContent align="end" className="w-56" side="right" sideOffset={10}>
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
@@ -53,7 +73,7 @@ export function UserButton() {
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
+                <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive focus:bg-destructive/10">
                     <LogOut className="mr-2 h-4 w-4" />
                     Log out
                 </DropdownMenuItem>

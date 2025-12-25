@@ -12,7 +12,7 @@ import {
     FileText,
     MessageSquare,
     Search,
-    Menu,
+    ChevronLeft,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -51,64 +51,79 @@ export function Sidebar() {
     return (
         <div
             className={cn(
-                "bg-slate-950 border-r border-slate-800 transition-all duration-300 flex flex-col",
+                "h-screen bg-sidebar border-r border-sidebar-border transition-all duration-300 flex flex-col relative z-20",
                 isOpen ? "w-64" : "w-20"
             )}
         >
+            {/* Toggle Button - Floating */}
+            <Button
+                variant="outline"
+                size="icon-sm"
+                onClick={() => setIsOpen(!isOpen)}
+                className="absolute -right-3 top-8 rounded-full h-6 w-6 border-sidebar-border bg-sidebar text-sidebar-foreground shadow-md hover:bg-sidebar-accent z-50 hidden md:flex"
+            >
+                <ChevronLeft className={cn("h-3 w-3 transition-transform", !isOpen && "rotate-180")} />
+            </Button>
+
             {/* Logo */}
-            <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-                {isOpen && (
-                    <Link href="/dashboard" className="flex items-center gap-3">
-                        <div className="relative w-10 h-10">
-                            <Image
-                                src="/logo.png"
-                                alt="CircuitIQ"
-                                fill
-                                className="object-contain"
-                            />
+            <div className="p-6 pb-2 flex items-center justify-between h-20">
+                <Link href="/dashboard" className={cn("flex items-center gap-3 transition-opacity duration-200", !isOpen && "justify-center w-full")}>
+                    <div className="relative w-9 h-9 shrink-0">
+                        <Image
+                            src="/logo.png"
+                            alt="CircuitIQ"
+                            fill
+                            className="object-contain"
+                        />
+                    </div>
+                    {isOpen && (
+                        <div className="flex flex-col">
+                            <span className="font-bold text-lg tracking-tight text-foreground">CircuitIQ</span>
+                            <span className="text-[10px] font-semibold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-full w-fit flex items-center gap-1">
+                                <span className="w-1 h-1 rounded-full bg-amber-500 animate-pulse" />
+                                GOLD
+                            </span>
                         </div>
-                        <div>
-                            <h1 className="font-bold text-lg text-slate-100">CircuitIQ</h1>
-                            <div className="flex items-center gap-1">
-                                <span className="text-[10px] bg-amber-500/10 text-amber-500 border border-amber-500/20 px-1.5 py-0.5 rounded font-medium">GOLD</span>
-                            </div>
-                        </div>
-                    </Link>
-                )}
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setIsOpen(!isOpen)}
-                    className="hover:bg-slate-800"
-                >
-                    <Menu size={20} />
-                </Button>
+                    )}
+                </Link>
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 p-4 space-y-2">
-                {routes.map((route) => (
-                    <Link
-                        key={route.href}
-                        href={route.href}
-                        className={cn(
-                            "flex items-center gap-3 px-4 py-3 rounded-lg transition-all",
-                            pathname === route.href
-                                ? "bg-blue-600 text-white shadow-lg"
-                                : "text-slate-300 hover:bg-slate-800 hover:text-white"
-                        )}
-                    >
-                        <route.icon size={20} />
-                        {isOpen && (
-                            <span className="font-medium">{route.label}</span>
-                        )}
-                    </Link>
-                ))}
-            </nav>
+            <div className="flex-1 py-6 px-3 space-y-1 overflow-y-auto custom-scrollbar">
+                {routes.map((route) => {
+                    const isActive = pathname.startsWith(route.href)
+
+                    return (
+                        <Link
+                            key={route.href}
+                            href={route.href}
+                            className={cn(
+                                "flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-200 group relative",
+                                isActive
+                                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/20 font-medium"
+                                    : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground",
+                                !isOpen && "justify-center px-2"
+                            )}
+                        >
+                            <route.icon size={20} className={cn("shrink-0", isActive ? "text-primary-foreground" : "text-slate-500 group-hover:text-sidebar-foreground")} />
+
+                            {isOpen && (
+                                <span className={cn("text-sm truncate")}>{route.label}</span>
+                            )}
+
+                            {!isOpen && (
+                                <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity shadow-lg border border-border whitespace-nowrap z-50">
+                                    {route.label}
+                                </div>
+                            )}
+                        </Link>
+                    )
+                })}
+            </div>
 
             {/* User Section */}
-            <div className="p-4 border-t border-slate-800">
-                <UserButton />
+            <div className="p-4 border-t border-sidebar-border bg-sidebar/50">
+                <UserButton isOpen={isOpen} />
             </div>
         </div>
     )
