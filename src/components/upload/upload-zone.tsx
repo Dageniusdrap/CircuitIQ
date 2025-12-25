@@ -3,11 +3,10 @@
 import { useState } from "react"
 import { UploadDropzone } from "@/lib/uploadthing"
 import { Button } from "@/components/ui/button"
-
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-// import Link from "next/link" // Ensure Link is imported
 import Link from "next/link"
-import { Upload, CheckCircle, XCircle, Loader2, ArrowRight, Zap, FileUp, Sparkles } from "lucide-react"
+import { Upload, CheckCircle, XCircle, Loader2, ArrowRight, Zap, FileUp, Sparkles, Plane, Car, Ship } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 
@@ -20,12 +19,59 @@ interface UploadedFile {
     diagramId?: string
 }
 
+type VehicleType = "AIRCRAFT" | "AUTOMOTIVE" | "MARINE" | "ELECTRIC_VEHICLE"
+
 export function UploadZone() {
     const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
     const [isHovering, setIsHovering] = useState(false)
+    const [selectedVehicleType, setSelectedVehicleType] = useState<VehicleType>("AIRCRAFT")
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
+            {/* Vehicle Type Selector */}
+            <Card className="border-white/5 bg-card/40 backdrop-blur-sm">
+                <CardHeader>
+                    <CardTitle className="text-lg">Select Vehicle Type</CardTitle>
+                    <CardDescription>Choose the category for your wiring diagrams</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <Button
+                            variant={selectedVehicleType === "AIRCRAFT" ? "default" : "outline"}
+                            onClick={() => setSelectedVehicleType("AIRCRAFT")}
+                            className="h-auto flex-col gap-2 py-4"
+                        >
+                            <Plane className="h-6 w-6" />
+                            <span className="text-sm font-semibold">Aviation</span>
+                        </Button>
+                        <Button
+                            variant={selectedVehicleType === "AUTOMOTIVE" ? "default" : "outline"}
+                            onClick={() => setSelectedVehicleType("AUTOMOTIVE")}
+                            className="h-auto flex-col gap-2 py-4"
+                        >
+                            <Car className="h-6 w-6" />
+                            <span className="text-sm font-semibold">Automotive</span>
+                        </Button>
+                        <Button
+                            variant={selectedVehicleType === "MARINE" ? "default" : "outline"}
+                            onClick={() => setSelectedVehicleType("MARINE")}
+                            className="h-auto flex-col gap-2 py-4"
+                        >
+                            <Ship className="h-6 w-6" />
+                            <span className="text-sm font-semibold">Marine</span>
+                        </Button>
+                        <Button
+                            variant={selectedVehicleType === "ELECTRIC_VEHICLE" ? "default" : "outline"}
+                            onClick={() => setSelectedVehicleType("ELECTRIC_VEHICLE")}
+                            className="h-auto flex-col gap-2 py-4"
+                        >
+                            <Zap className="h-6 w-6" />
+                            <span className="text-sm font-semibold">Electric Cars</span>
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+
             {/* Hero Upload Card */}
             <div className="relative group rounded-3xl p-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent hover:via-primary/80 transition-all duration-500">
                 <div className={cn(
@@ -58,6 +104,7 @@ export function UploadZone() {
                         >
                             <UploadDropzone
                                 endpoint="diagramUploader"
+                                input={{ vehicleType: selectedVehicleType }}
                                 className="border-2 border-dashed border-white/10 bg-white/5 hover:bg-white/10 hover:border-primary/50 rounded-2xl transition-all duration-300 min-h-[250px] flex flex-col items-center justify-center ut-label:text-lg ut-label:font-semibold ut-label:text-foreground ut-allowed-content:text-muted-foreground ut-allowed-content:text-sm ut-button:!bg-primary ut-button:hover:!bg-primary/90 ut-button:!text-white ut-button:!font-semibold ut-button:!shadow-lg ut-button:!shadow-primary/25 ut-button:hover:!shadow-primary/40 ut-button:!transition-all ut-button:!duration-200 ut-button:!px-8 ut-button:!py-3 ut-button:!rounded-xl ut-button:!border-0 ut-button:active:!scale-[0.98] ut-button:!text-sm ut-upload-icon:text-primary/60 ut-upload-icon:!w-8 ut-upload-icon:!h-8"
                                 onClientUploadComplete={(res) => {
                                     toast.success("Upload completed successfully!")

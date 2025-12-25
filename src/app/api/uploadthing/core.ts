@@ -1,6 +1,7 @@
 import { createUploadthing, type FileRouter } from "uploadthing/next"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/db"
+import { z } from "zod"
 
 const f = createUploadthing()
 
@@ -10,7 +11,10 @@ export const ourFileRouter = {
         image: { maxFileSize: "16MB", maxFileCount: 20 },
         blob: { maxFileSize: "64MB", maxFileCount: 10 }, // For DWG and others
     })
-        .middleware(async () => {
+        .input(z.object({
+            vehicleType: z.enum(["AIRCRAFT", "AUTOMOTIVE", "MARINE", "ELECTRIC_VEHICLE"])
+        }))
+        .middleware(async ({ input }) => {
             const session = await auth()
 
             if (!session?.user) {
@@ -26,12 +30,14 @@ export const ourFileRouter = {
             return {
                 userId: session.user.id,
                 userRole: session.user.role,
+                vehicleType: input.vehicleType,
             }
         })
         .onUploadComplete(async ({ metadata, file }) => {
             console.log("Upload complete for userId:", metadata.userId)
             console.log("File URL:", file.url)
             console.log("File key:", file.key)
+            console.log("Vehicle type:", metadata.vehicleType)
 
             // Create initial diagram record with PENDING status
             let diagramId = "";
@@ -44,7 +50,7 @@ export const ourFileRouter = {
                         fileType: file.type,
                         fileSize: file.size,
                         status: "PENDING",
-                        vehicleType: "AIRCRAFT",
+                        vehicleType: metadata.vehicleType,
                         manufacturer: "Unknown",
                         model: "Unknown",
                         system: "Unknown",
