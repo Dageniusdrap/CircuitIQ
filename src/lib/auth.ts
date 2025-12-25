@@ -5,7 +5,7 @@ import GoogleProvider from "next-auth/providers/google"
 import GitHubProvider from "next-auth/providers/github"
 import bcrypt from "bcryptjs"
 import { prisma } from "@/lib/db"
-import { UserRole } from "@prisma/client"
+import { UserRole, SubscriptionPlan } from "@prisma/client"
 import { authConfig } from "./auth.config"
 
 declare module "next-auth" {
@@ -13,6 +13,7 @@ declare module "next-auth" {
         user: {
             id: string
             role: UserRole
+            plan: SubscriptionPlan
         } & DefaultSession["user"]
     }
 }
@@ -90,6 +91,10 @@ export const {
                 session.user.role = token.role as UserRole
             }
 
+            if (token.plan && session.user) {
+                session.user.plan = token.plan as SubscriptionPlan
+            }
+
             return session
         },
         async jwt({ token }) {
@@ -102,6 +107,7 @@ export const {
             if (!existingUser) return token
 
             token.role = existingUser.role
+            token.plan = existingUser.plan
 
             return token
         },

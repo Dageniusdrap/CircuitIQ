@@ -44,11 +44,19 @@ model User {
   role          UserRole  @default(TECHNICIAN)
   password      String?
   
+  // Subscription fields
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+  stripePriceId        String?
+  stripeCurrentPeriodEnd DateTime?
+  plan                 SubscriptionPlan @default(FREE)
+  
   // Relations
   accounts      Account[]
   sessions      Session[]
   diagrams      Diagram[]
   analyses      Analysis[]
+  subscription  Subscription?
   
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -56,6 +64,52 @@ model User {
   // Two Factor Auth
   twoFactorEnabled Boolean @default(false)
   twoFactorSecret  String?
+}
+
+// Subscription Plans
+enum SubscriptionPlan {
+  FREE
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+// Subscription Status
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+  INACTIVE
+}
+
+model Subscription {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  plan                 SubscriptionPlan @default(FREE)
+  status               SubscriptionStatus @default(INACTIVE)
+  
+  // Stripe fields
+  stripeSubscriptionId String?  @unique
+  stripePriceId        String?
+  stripeCustomerId     String?
+  
+  // Billing cycle
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean  @default(false)
+  
+  // Usage tracking
+  diagramsUsed         Int      @default(0)
+  analysesUsed         Int      @default(0)
+  aiQueriesUsed        Int      @default(0)
+  
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  
+  @@index([stripeSubscriptionId])
+  @@index([userId])
 }
 
 model Account {
