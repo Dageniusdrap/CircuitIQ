@@ -15,6 +15,7 @@ import {
     ChevronLeft,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 
 const routes = [
     {
@@ -86,6 +87,7 @@ export function Sidebar() {
                         </div>
                     )}
                 </Link>
+                {isOpen && <ThemeToggle />}
             </div>
 
             {/* Navigation */}
