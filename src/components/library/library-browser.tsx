@@ -5,7 +5,7 @@ import { Diagram } from "@prisma/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Folder, FileText, ChevronRight, Car, Plane, Ship, Search } from "lucide-react"
+import { Folder, FileText, ChevronRight, Car, Plane, Ship, Search, Zap } from "lucide-react"
 import { ATA_CHAPTERS } from "@/lib/constants"
 import Link from "next/link"
 
@@ -21,7 +21,8 @@ export function LibraryBrowser({ diagrams }: LibraryBrowserProps) {
     const categoryDiagrams = diagrams.filter(d =>
         d.vehicleType.toLowerCase() === selectedCategory.toLowerCase() ||
         (selectedCategory === "automotive" && d.vehicleType === "AUTOMOTIVE") ||
-        (selectedCategory === "aircraft" && d.vehicleType === "AIRCRAFT")
+        (selectedCategory === "aircraft" && d.vehicleType === "AIRCRAFT") ||
+        (selectedCategory === "electric" && d.vehicleType === "ELECTRIC_VEHICLE")
     )
 
     // Group by ATA Chapter (for Aircraft) or System (for others)
@@ -38,7 +39,7 @@ export function LibraryBrowser({ diagrams }: LibraryBrowserProps) {
     return (
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row justify-between gap-4 items-center">
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                     <Button
                         variant={selectedCategory === "aircraft" ? "default" : "outline"}
                         onClick={() => setSelectedCategory("aircraft")}
@@ -59,6 +60,13 @@ export function LibraryBrowser({ diagrams }: LibraryBrowserProps) {
                         className="gap-2"
                     >
                         <Ship className="h-4 w-4" /> Marine
+                    </Button>
+                    <Button
+                        variant={selectedCategory === "electric" ? "default" : "outline"}
+                        onClick={() => setSelectedCategory("electric")}
+                        className="gap-2"
+                    >
+                        <Zap className="h-4 w-4" /> Electric Cars
                     </Button>
                 </div>
 
