@@ -15,86 +15,38 @@ import {
     ChevronRight,
     AlertCircle,
     CheckCircle2,
-    Play
+    Clock,
+    Wrench
 } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
-
-interface Procedure {
-    id: string
-    title: string
-    category: "aircraft" | "automotive" | "marine" | "electric"
-    system: string
-    difficulty: "beginner" | "intermediate" | "advanced"
-    duration: string
-    steps: number
-    description: string
-}
-
-// Sample procedures - in production, these would come from database
-const SAMPLE_PROCEDURES: Procedure[] = [
-    {
-        id: "apu-start",
-        title: "APU Start Procedure",
-        category: "aircraft",
-        system: "Auxiliary Power Unit",
-        difficulty: "intermediate",
-        duration: "5 min",
-        steps: 8,
-        description: "Complete procedure for starting the Auxiliary Power Unit including electrical system checks"
-    },
-    {
-        id: "electrical-power-up",
-        title: "Aircraft Electrical Power-Up",
-        category: "aircraft",
-        system: "Electrical Power (ATA 24)",
-        difficulty: "beginner",
-        duration: "10 min",
-        steps: 12,
-        description: "Standard procedure for energizing aircraft electrical systems from cold and dark"
-    },
-    {
-        id: "ev-charging-system",
-        title: "EV Charging System Check",
-        category: "electric",
-        system: "Charging System",
-        difficulty: "intermediate",
-        duration: "15 min",
-        steps: 10,
-        description: "Diagnostic procedure for electric vehicle charging systems and troubleshooting"
-    },
-    {
-        id: "engine-electrical-test",
-        title: "Engine Electrical System Test",
-        category: "automotive",
-        system: "Engine Management",
-        difficulty: "intermediate",
-        duration: "20 min",
-        steps: 15,
-        description: "Complete electrical diagnostic procedure for automotive engine management systems"
-    },
-    {
-        id: "marine-bilge-pump",
-        title: "Bilge Pump Circuit Test",
-        category: "marine",
-        system: "Bilge System",
-        difficulty: "beginner",
-        duration: "8 min",
-        steps: 6,
-        description: "Testing and troubleshooting procedure for marine bilge pump electrical circuits"
-    },
-]
+import { ALL_PROCEDURES, type Procedure } from "@/lib/data/procedures"
 
 export function ProcedureLibrary() {
     const [selectedCategory, setSelectedCategory] = useState<string>("all")
     const [searchQuery, setSearchQuery] = useState("")
 
-    const filteredProcedures = SAMPLE_PROCEDURES.filter(proc => {
+    const filteredProcedures = ALL_PROCEDURES.filter(proc => {
         const matchesCategory = selectedCategory === "all" || proc.category === selectedCategory
         const matchesSearch = proc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            proc.system.toLowerCase().includes(searchQuery.toLowerCase())
+            proc.system.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            proc.description.toLowerCase().includes(searchQuery.toLowerCase())
         return matchesCategory && matchesSearch
     })
+
+    // Group by ATA chapter for aircraft, by system for others
+    const groupedProcedures = filteredProcedures.reduce((acc, proc) => {
+        let groupKey: string
+        if (proc.category === "aircraft" && proc.ataChapter) {
+            groupKey = `ATA ${proc.ataChapter} - ${proc.system}`
+        } else {
+            groupKey = proc.system
+        }
+
+        if (!acc[groupKey]) acc[groupKey] = []
+        acc[groupKey].push(proc)
+        return acc
+    }, {} as Record<string, Procedure[]>)
 
     const getDifficultyColor = (difficulty: string) => {
         switch (difficulty) {
@@ -103,6 +55,24 @@ export function ProcedureLibrary() {
             case "advanced": return "bg-red-500/10 text-red-500 border-red-500/20"
             default: return "bg-slate-500/10 text-slate-500 border-slate-500/20"
         }
+    }
+
+    const getCategoryIcon = (category: string) => {
+        switch (category) {
+            case "aircraft": return <Plane className="h-4 w-4" />
+            case "automotive": return <Car className="h-4 w-4" />
+            case "marine": return <Ship className="h-4 w-4" />
+            case "electric": return <Zap className="h-4 w-4" />
+            default: return <BookOpen className="h-4 w-4" />
+        }
+    }
+
+    const procedureCounts = {
+        all: ALL_PROCEDURES.length,
+        aircraft: ALL_PROCEDURES.filter(p => p.category === "aircraft").length,
+        automotive: ALL_PROCEDURES.filter(p => p.category === "automotive").length,
+        marine: ALL_PROCEDURES.filter(p => p.category === "marine").length,
+        electric: ALL_PROCEDURES.filter(p => p.category === "electric").length,
     }
 
     return (
@@ -210,10 +180,10 @@ export function ProcedureLibrary() {
                             <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                 <div className="flex items-center gap-1">
                                     <CheckCircle2 className="h-4 w-4" />
-                                    <span>{procedure.steps} steps</span>
+                                    <span>{procedure.steps.length} steps</span>
                                 </div>
                                 <div className="flex items-center gap-1">
-                                    <Play className="h-4 w-4" />
+                                    <Clock className="h-4 w-4" />
                                     <span>{procedure.duration}</span>
                                 </div>
                             </div>
