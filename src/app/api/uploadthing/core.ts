@@ -12,7 +12,7 @@ export const ourFileRouter = {
         blob: { maxFileSize: "64MB", maxFileCount: 10 }, // For DWG and others
     })
         .input(z.object({
-            vehicleType: z.enum(["AIRCRAFT", "AUTOMOTIVE", "MARINE", "ELECTRIC_VEHICLE"])
+            vehicleType: z.enum(["AIRCRAFT", "AUTOMOTIVE", "MARINE", "OTHER"])
         }))
         .middleware(async ({ input }) => {
             const session = await auth()

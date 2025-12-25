@@ -19,7 +19,7 @@ interface UploadedFile {
     diagramId?: string
 }
 
-type VehicleType = "AIRCRAFT" | "AUTOMOTIVE" | "MARINE" | "ELECTRIC_VEHICLE"
+type VehicleType = "AIRCRAFT" | "AUTOMOTIVE" | "MARINE" | "OTHER"
 
 export function UploadZone() {
     const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
@@ -61,12 +61,12 @@ export function UploadZone() {
                             <span className="text-sm font-semibold">Marine</span>
                         </Button>
                         <Button
-                            variant={selectedVehicleType === "ELECTRIC_VEHICLE" ? "default" : "outline"}
-                            onClick={() => setSelectedVehicleType("ELECTRIC_VEHICLE")}
+                            variant={selectedVehicleType === "OTHER" ? "default" : "outline"}
+                            onClick={() => setSelectedVehicleType("OTHER")}
                             className="h-auto flex-col gap-2 py-4"
                         >
                             <Zap className="h-6 w-6" />
-                            <span className="text-sm font-semibold">Electric Cars</span>
+                            <span className="text-sm font-semibold">Others</span>
                         </Button>
                     </div>
                 </CardContent>
