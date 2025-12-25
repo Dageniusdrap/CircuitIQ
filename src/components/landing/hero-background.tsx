@@ -5,8 +5,10 @@ import { useEffect, useState } from "react"
 
 export function HeroBackground() {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+    const [mounted, setMounted] = useState(false)
 
     useEffect(() => {
+        setMounted(true)
         const handleMouseMove = (e: MouseEvent) => {
             setMousePosition({
                 x: e.clientX / window.innerWidth,
@@ -56,7 +58,7 @@ export function HeroBackground() {
 
             {/* Animated Particles/Sparks */}
             <div className="absolute inset-0 z-20 pointer-events-none">
-                {[...Array(20)].map((_, i) => (
+                {mounted && [...Array(20)].map((_, i) => (
                     <motion.div
                         key={i}
                         className="absolute bg-blue-500 rounded-full"
