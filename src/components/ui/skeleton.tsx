@@ -62,3 +62,45 @@ export function TableRowSkeleton() {
         </div>
     )
 }
+
+export function PageLoadingSpinner() {
+    return (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="relative">
+                {/* Outer ring */}
+                <div className="w-16 h-16 border-4 border-primary/20 rounded-full animate-pulse" />
+                {/* Spinning ring */}
+                <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-primary rounded-full animate-spin" />
+                {/* Center dot */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-3 h-3 rounded-full bg-primary animate-pulse" />
+                </div>
+            </div>
+        </div>
+    )
+}
+
+export function DashboardSkeleton() {
+    return (
+        <div className="space-y-6">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {[...Array(4)].map((_, i) => (
+                    <StatCardSkeleton key={i} />
+                ))}
+            </div>
+
+            {/* Main Content */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-2">
+                    {[...Array(4)].map((_, i) => (
+                        <TableRowSkeleton key={i} />
+                    ))}
+                </div>
+                <div className="space-y-4">
+                    <DiagramCardSkeleton />
+                </div>
+            </div>
+        </div>
+    )
+}
