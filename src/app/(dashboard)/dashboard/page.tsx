@@ -34,10 +34,12 @@ export default async function DashboardPage() {
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold">Dashboard</h1>
-                <p className="text-slate-400 mt-1">
-                    Overview of your diagnostic activities
+            <div className="space-y-2">
+                <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text">
+                    Dashboard
+                </h1>
+                <p className="text-muted-foreground text-lg">
+                    Welcome back, {session?.user?.name?.split(' ')[0] || 'there'}! Here&apos;s your diagnostic overview
                 </p>
             </div>
 

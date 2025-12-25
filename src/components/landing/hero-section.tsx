@@ -63,13 +63,13 @@ export function HeroSection() {
                         className="flex flex-col sm:flex-row gap-4 justify-center pt-4"
                         variants={item}
                     >
-                        <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-500 text-lg px-8 py-6 rounded-full shadow-lg shadow-blue-900/20 hover:shadow-blue-900/40 transition-all active:scale-95">
+                        <Button asChild size="lg" className="gap-2 h-12">
                             <Link href="/register">
                                 Get Started Free
-                                <ArrowRight className="ml-2 h-5 w-5" />
+                                <ArrowRight className="h-5 w-5" />
                             </Link>
                         </Button>
-                        <Button asChild size="lg" variant="outline" className="text-lg px-8 py-6 rounded-full border-slate-700 hover:bg-slate-800/50 backdrop-blur-sm transition-all active:scale-95">
+                        <Button asChild size="lg" variant="glass" className="h-12">
                             <Link href="/login">Sign In</Link>
                         </Button>
                     </motion.div>

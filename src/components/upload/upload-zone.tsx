@@ -58,7 +58,7 @@ export function UploadZone() {
                         >
                             <UploadDropzone
                                 endpoint="diagramUploader"
-                                className="border-2 border-dashed border-white/10 bg-white/5 hover:bg-white/10 hover:border-primary/50 rounded-2xl transition-all duration-300 min-h-[250px] flex flex-col items-center justify-center ut-label:text-lg ut-allowed-content:text-slate-400 ut-button:bg-primary ut-button:hover:bg-primary/90 ut-button:text-white ut-button:shadow-lg ut-button:shadow-primary/25 ut-button:transition-all ut-button:px-8 ut-button:py-3 ut-button:rounded-full ut-upload-icon:text-primary/80"
+                                className="border-2 border-dashed border-white/10 bg-white/5 hover:bg-white/10 hover:border-primary/50 rounded-2xl transition-all duration-300 min-h-[250px] flex flex-col items-center justify-center ut-label:text-lg ut-label:font-semibold ut-allowed-content:text-slate-400 ut-button:!bg-primary ut-button:hover:!bg-primary/90 ut-button:!text-white ut-button:!font-semibold ut-button:shadow-lg ut-button:!shadow-primary/30 ut-button:hover:!shadow-primary/50 ut-button:transition-all ut-button:!px-8 ut-button:!py-3 ut-button:!rounded-full ut-button:!border-0 ut-upload-icon:text-primary/80"
                                 onClientUploadComplete={(res) => {
                                     toast.success("Upload completed successfully!")
                                     const newFiles: UploadedFile[] = res.map(file => ({
