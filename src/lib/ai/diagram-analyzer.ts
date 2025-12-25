@@ -171,7 +171,8 @@ Be thorough and extract as much detail as possible. For component positions, est
                         type: comp.type,
                         location: comp.location,
                         function: comp.function,
-                        specifications: comp.specifications || {},
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        specifications: (comp.specifications || {}) as any,
                         xPosition: comp.xPosition,
                         yPosition: comp.yPosition,
                         extractedByAI: true,

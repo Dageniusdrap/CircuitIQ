@@ -38,7 +38,7 @@ export function UploadZone() {
                     <UploadDropzone
                         endpoint="diagramUploader"
                         onClientUploadComplete={(res) => {
-                            console.log("Files: ", res)
+
                             toast.success("Upload completed!")
 
                             // Add files to the list with completed status
@@ -62,7 +62,7 @@ export function UploadZone() {
                             setUploadedFiles(prev => prev.map(f => f.status === "uploading" ? { ...f, status: "error" } : f))
                         }}
                         onUploadBegin={(name) => {
-                            console.log("Uploading: ", name)
+
 
                             // Add file to list with uploading status
                             setUploadedFiles(prev => [...prev, {
