@@ -128,7 +128,7 @@ export function Footer() {
                         © {new Date().getFullYear()} CircuitIQ. All rights reserved.
                     </p>
                     <div className="flex items-center gap-6 text-sm text-slate-500">
-                        <span>🇺🇸 Made in USA</span>
+                        <span>🇺🇬 Made in Terego, Uganda</span>
                         <span>•</span>
                         <span>SOC 2 Compliant</span>
                         <span>•</span>
