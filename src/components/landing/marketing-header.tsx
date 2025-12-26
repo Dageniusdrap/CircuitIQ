@@ -1,8 +1,9 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Zap, Menu, X } from "lucide-react"
+import { Menu, X } from "lucide-react"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 
@@ -19,11 +20,17 @@ export function MarketingHeader() {
         <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-background/80 backdrop-blur-xl">
             <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-2 group">
-                    <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
-                        <Zap className="h-5 w-5 text-primary" />
-                    </div>
-                    <span className="text-xl font-bold text-white">CircuitIQ</span>
+                <Link href="/" className="flex items-center gap-3 group">
+                    <Image
+                        src="/icon.png"
+                        alt="CircuitIQ"
+                        width={36}
+                        height={36}
+                        className="rounded-lg"
+                    />
+                    <span className="text-xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
+                        CircuitIQ
+                    </span>
                 </Link>
 
                 {/* Desktop Navigation */}

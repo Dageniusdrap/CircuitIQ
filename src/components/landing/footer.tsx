@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { Zap, Github, Twitter, Linkedin, Mail } from "lucide-react"
+import Image from "next/image"
+import { Github, Twitter, Linkedin, Mail } from "lucide-react"
 
 const FOOTER_LINKS = {
     product: [
@@ -33,11 +34,17 @@ export function Footer() {
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
                     {/* Brand */}
                     <div className="col-span-2 md:col-span-1 space-y-4">
-                        <Link href="/" className="flex items-center gap-2">
-                            <div className="p-2 bg-primary/10 rounded-lg">
-                                <Zap className="h-6 w-6 text-primary" />
-                            </div>
-                            <span className="text-xl font-bold text-white">CircuitIQ</span>
+                        <Link href="/" className="flex items-center gap-3">
+                            <Image
+                                src="/icon.png"
+                                alt="CircuitIQ"
+                                width={36}
+                                height={36}
+                                className="rounded-lg"
+                            />
+                            <span className="text-xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
+                                CircuitIQ
+                            </span>
                         </Link>
                         <p className="text-sm text-slate-400 leading-relaxed">
                             AI-powered wiring diagram analysis for aviation, automotive, marine, and electric vehicles.
