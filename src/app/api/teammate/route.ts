@@ -52,8 +52,12 @@ export async function POST(req: NextRequest) {
         }
     } catch (error) {
         console.error("Teammate API error:", error)
+        // Check for specific OpenAI errors
+        if (error instanceof Error && error.message.includes("401")) {
+            return NextResponse.json({ error: "AI Configuration Error: Invalid API Key" }, { status: 500 })
+        }
         return NextResponse.json(
-            { error: "Internal server error", details: error instanceof Error ? error.message : "Unknown error" },
+            { error: "Internal server error", details: error instanceof Error ? error.message : String(error) },
             { status: 500 }
         )
     }

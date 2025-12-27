@@ -112,7 +112,10 @@ export function TeammateChat({ vehicleInfo, onComponentHighlight }: TeammateChat
                 }),
             })
 
-            if (!response.ok) throw new Error("Failed to communicate with teammate")
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}))
+                throw new Error(errorData.details || errorData.error || "Failed to communicate with teammate")
+            }
 
             const data = await response.json()
 
@@ -134,8 +137,9 @@ export function TeammateChat({ vehicleInfo, onComponentHighlight }: TeammateChat
             if (data.highlightComponents && onComponentHighlight) {
                 onComponentHighlight(data.highlightComponents)
             }
-        } catch {
-            toast.error("Connection issue. Let me try to reconnect...")
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "Connection issue"
+            toast.error(`Error: ${errorMessage}`)
 
             // Add error recovery message
             setMessages((prev) => [
