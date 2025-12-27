@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth"
 import { analyzeDiagramWithVision } from "@/lib/ai/diagram-analyzer"
 import { prisma } from "@/lib/db"
 
+export const dynamic = "force-dynamic"
+
 export async function POST(req: Request) {
     try {
         const session = await auth()
