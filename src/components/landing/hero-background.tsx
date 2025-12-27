@@ -51,7 +51,7 @@ export function HeroBackground() {
         <div className="absolute inset-0 z-0 overflow-hidden bg-slate-950">
             {/* Animated Background Image - Ken Burns Effect */}
             <motion.div
-                className="absolute inset-0 z-0 opacity-40"
+                className="absolute inset-0 z-0 opacity-55"
                 initial={{ scale: 1 }}
                 animate={{
                     scale: 1.1,

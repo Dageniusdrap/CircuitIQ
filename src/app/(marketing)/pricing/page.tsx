@@ -13,24 +13,24 @@ export default async function PricingPage() {
     const session = await auth()
 
     return (
-        <>
+        <div className="dark bg-slate-950 min-h-screen">
             <MarketingHeader />
-            <main className="min-h-screen bg-gradient-to-b from-background via-background to-slate-950 pt-16">
+            <main className="pt-16">
                 <div className="container mx-auto px-4 py-16 max-w-7xl">
                     {/* Header */}
                     <div className="text-center mb-16 space-y-4">
-                        <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text">
+                        <h1 className="text-5xl font-bold tracking-tight text-white">
                             Simple, Transparent Pricing
                         </h1>
-                        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                        <p className="text-xl text-slate-300 max-w-2xl mx-auto">
                             Choose the plan that fits your needs. Upgrade or downgrade anytime.
                         </p>
                     </div>
 
-                    <PricingPlans currentPlan={session?.user?.plan || "FREE"} />
+                    <PricingPlans currentPlan={session?.user?.plan} />
                 </div>
             </main>
             <Footer />
-        </>
+        </div>
     )
 }

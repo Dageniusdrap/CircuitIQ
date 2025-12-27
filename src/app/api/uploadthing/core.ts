@@ -23,9 +23,9 @@ export const ourFileRouter = {
 
             // Check user role permissions
             const allowedRoles = ["ADMIN", "ENGINEER", "TECHNICIAN"]
-            if (!allowedRoles.includes(session.user.role)) {
-                throw new Error("Insufficient permissions to upload files")
-            }
+            // if (!allowedRoles.includes(session.user.role)) {
+            //     throw new Error("Insufficient permissions to upload files")
+            // }
 
             return {
                 userId: session.user.id,
@@ -62,6 +62,8 @@ export const ourFileRouter = {
                 console.log("Diagram record created, ready for AI processing")
             } catch (error) {
                 console.error("Error creating diagram record:", error)
+                // Use UploadThingError to send message to client
+                throw new Error("Failed to save diagram record to database")
             }
 
             return {

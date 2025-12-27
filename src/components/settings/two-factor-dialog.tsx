@@ -47,12 +47,15 @@ export function TwoFactorDialog({ status }: TwoFactorDialogProps) {
 
         setIsLoading(true)
         try {
-            await enableTwoFactor(token, qrData.secret)
-            toast.success("Two-factor authentication enabled successfully")
-            setIsOpen(false)
-            setStep("INTRO")
-            setToken("")
-            // Force text reload/update if needed by parent, but server action revalidates
+            const result = await enableTwoFactor(token)
+            if (result.success) {
+                toast.success("Two-factor authentication enabled successfully")
+                setIsOpen(false)
+                setStep("INTRO")
+                setToken("")
+            } else {
+                toast.error(result.error || "Invalid code. Please try again.")
+            }
         } catch {
             toast.error("Invalid code. Please try again.")
         } finally {
@@ -61,13 +64,13 @@ export function TwoFactorDialog({ status }: TwoFactorDialogProps) {
     }
 
     const disable = async () => {
+        // For this simple dialog, we'll just show a warning
+        // The full disable with password is in SecuritySettings
         setIsLoading(true)
         try {
-            await disableTwoFactor()
-            toast.success("Two-factor authentication disabled")
+            // Note: This will fail without password - redirect to security settings
+            toast.error("Please disable 2FA from Security Settings for password verification")
             setIsOpen(false)
-        } catch {
-            toast.error("Failed to disable 2FA")
         } finally {
             setIsLoading(false)
         }

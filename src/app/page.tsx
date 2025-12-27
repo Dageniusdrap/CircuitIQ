@@ -7,7 +7,7 @@ import { Footer } from "@/components/landing/footer"
 
 export default function LandingPage() {
   return (
-    <>
+    <div className="dark bg-slate-950 min-h-screen">
       <MarketingHeader />
       <main className="pt-16">
         <HeroSection />
@@ -16,6 +16,6 @@ export default function LandingPage() {
         <CTASection />
       </main>
       <Footer />
-    </>
+    </div>
   )
 }

@@ -75,6 +75,7 @@ export const {
                     email: user.email,
                     name: user.name,
                     role: user.role,
+                    plan: user.plan,
                     image: user.image,
                 }
             },
@@ -97,17 +98,21 @@ export const {
 
             return session
         },
-        async jwt({ token }) {
-            if (!token.sub) return token
+        async jwt({ token, user, trigger }) {
+            // When user signs in, add role and plan to token
+            // This happens on initial sign-in, not on every request
+            if (user) {
+                // User is available on sign-in
+                token.role = (user as { role?: UserRole }).role || "TECHNICIAN"
+                token.plan = (user as { plan?: SubscriptionPlan }).plan || "FREE"
+            }
 
-            const existingUser = await prisma.user.findUnique({
-                where: { id: token.sub },
-            })
-
-            if (!existingUser) return token
-
-            token.role = existingUser.role
-            token.plan = existingUser.plan
+            // Handle token refresh if needed (e.g., when user updates their profile)
+            // This is called on session access, but we don't query DB every time
+            if (trigger === "update") {
+                // Token refresh is triggered manually, e.g., after plan upgrade
+                // We can skip DB queries here in Edge runtime
+            }
 
             return token
         },

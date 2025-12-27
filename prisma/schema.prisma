@@ -62,8 +62,9 @@ model User {
   updatedAt     DateTime  @updatedAt
 
   // Two Factor Auth
-  twoFactorEnabled Boolean @default(false)
-  twoFactorSecret  String?
+  twoFactorEnabled     Boolean @default(false)
+  twoFactorSecret      String?
+  twoFactorBackupCodes String? @db.Text // JSON array of hashed backup codes
 }
 
 // Subscription Plans
@@ -149,6 +150,15 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model PasswordResetToken {
+  id      String   @id @default(cuid())
+  email   String   @unique
+  token   String   @unique
+  expires DateTime
+
+  createdAt DateTime @default(now())
 }
 
 // ============================================
