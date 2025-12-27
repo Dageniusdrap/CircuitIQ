@@ -7,11 +7,10 @@ export const metadata: Metadata = {
     description: "Chat with your AI diagnostic teammate",
 }
 
-export default async function DiagnosticsPage({
-    searchParams,
-}: {
-    searchParams: { diagramId?: string }
+export default async function DiagnosticsPage(props: {
+    searchParams: Promise<{ diagramId?: string }>
 }) {
+    const searchParams = await props.searchParams
     let vehicleInfo: { make: string, model: string, type: "aircraft" | "automotive" | "marine" } = { make: "Generic", model: "Vehicle", type: "aircraft" }
     let diagramContext = null
 
