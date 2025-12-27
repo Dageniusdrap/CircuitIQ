@@ -51,13 +51,13 @@ export async function recordLoginAttempt(identifier: string, success: boolean) {
         return
     }
 
-    const attempts = loginAttempts.get(identifier)
-    if (attempts) {
-        attempts.count += 1
-        attempts.lastAttempt = Date.now()
-    } else {
-        loginAttempts.set(identifier, { count: 1, lastAttempt: Date.now() })
-    }
+    //     const attempts = loginAttempts.get(identifier)
+    //     if (attempts) {
+    //         attempts.count += 1
+    //         attempts.lastAttempt = Date.now()
+    //     } else {
+    //         loginAttempts.set(identifier, { count: 1, lastAttempt: Date.now() })
+    //     }
 }
 
 /**
