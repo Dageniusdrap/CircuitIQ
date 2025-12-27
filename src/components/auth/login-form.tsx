@@ -139,9 +139,11 @@ export function LoginForm() {
                         window.location.href = "/dashboard"
                     }, 500)
                 }
-            } catch {
-                setError("Something went wrong. Please try again.")
-                showAuthError("Something went wrong. Please try again.")
+            } catch (err) {
+                console.error("Login error:", err)
+                const message = err instanceof Error ? err.message : "Something went wrong. Please try again."
+                setError(message)
+                showAuthError(message)
             }
         })
     }
