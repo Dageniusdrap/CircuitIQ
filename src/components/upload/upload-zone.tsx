@@ -21,7 +21,10 @@ interface UploadedFile {
 
 type VehicleType = "AIRCRAFT" | "AUTOMOTIVE" | "MARINE" | "ELECTRIC_VEHICLE"
 
+import { useRouter } from "next/navigation"
+
 export function UploadZone() {
+    const router = useRouter()
     const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
     const [isHovering, setIsHovering] = useState(false)
     const [selectedVehicleType, setSelectedVehicleType] = useState<VehicleType>("AIRCRAFT")
@@ -108,6 +111,7 @@ export function UploadZone() {
                                 className="border-2 border-dashed border-white/10 bg-white/5 hover:bg-white/10 hover:border-primary/50 rounded-2xl transition-all duration-300 min-h-[250px] flex flex-col items-center justify-center ut-label:text-lg ut-label:font-semibold ut-label:text-foreground ut-allowed-content:text-muted-foreground ut-allowed-content:text-sm ut-button:!bg-primary ut-button:hover:!bg-primary/90 ut-button:!text-white ut-button:!font-semibold ut-button:!shadow-lg ut-button:!shadow-primary/25 ut-button:hover:!shadow-primary/40 ut-button:!transition-all ut-button:!duration-200 ut-button:!px-8 ut-button:!py-3 ut-button:!rounded-xl ut-button:!border-0 ut-button:active:!scale-[0.98] ut-button:!text-sm ut-upload-icon:text-primary/60 ut-upload-icon:!w-8 ut-upload-icon:!h-8"
                                 onClientUploadComplete={(res) => {
                                     toast.success("Upload completed successfully!")
+                                    router.refresh() // <--- Forces server component (Recent Uploads) to update
                                     const newFiles: UploadedFile[] = res.map(file => ({
                                         name: file.name,
                                         url: file.url,
