@@ -109,21 +109,58 @@ export function UploadZone() {
                                 endpoint="diagramUploader"
                                 input={{ vehicleType: selectedVehicleType }}
                                 className="border-2 border-dashed border-white/10 bg-white/5 hover:bg-white/10 hover:border-primary/50 rounded-2xl transition-all duration-300 min-h-[250px] flex flex-col items-center justify-center ut-label:text-lg ut-label:font-semibold ut-label:text-foreground ut-allowed-content:text-muted-foreground ut-allowed-content:text-sm ut-button:!bg-primary ut-button:hover:!bg-primary/90 ut-button:!text-white ut-button:!font-semibold ut-button:!shadow-lg ut-button:!shadow-primary/25 ut-button:hover:!shadow-primary/40 ut-button:!transition-all ut-button:!duration-200 ut-button:!px-8 ut-button:!py-3 ut-button:!rounded-xl ut-button:!border-0 ut-button:active:!scale-[0.98] ut-button:!text-sm ut-upload-icon:text-primary/60 ut-upload-icon:!w-8 ut-upload-icon:!h-8"
-                                onClientUploadComplete={(res) => {
-                                    toast.success("Upload completed successfully!")
-                                    router.refresh() // <--- Forces server component (Recent Uploads) to update
+                                onClientUploadComplete={async (res) => {
+                                    // 1. Mark as processing locally
                                     const newFiles: UploadedFile[] = res.map(file => ({
                                         name: file.name,
                                         url: file.url,
                                         key: file.key,
-                                        status: "completed",
+                                        status: "processing", // Start as processing
                                         progress: 100,
                                         diagramId: (file.serverData as { diagramId?: string })?.diagramId
                                     }))
+
                                     setUploadedFiles(prev => {
                                         const filtered = prev.filter(f => f.status !== "uploading")
                                         return [...filtered, ...newFiles]
                                     })
+
+                                    toast.info("AI Analysis in progress...")
+
+                                    // 2. Trigger Analysis for each file
+                                    for (const file of newFiles) {
+                                        if (!file.diagramId) continue
+
+                                        try {
+                                            const analysisRes = await fetch("/api/analyze", {
+                                                method: "POST",
+                                                body: JSON.stringify({ diagramId: file.diagramId }),
+                                                headers: { "Content-Type": "application/json" }
+                                            })
+
+                                            if (!analysisRes.ok) {
+                                                const errorData = await analysisRes.json()
+                                                throw new Error(errorData.error || "Analysis failed")
+                                            }
+
+                                            // Success
+                                            setUploadedFiles(prev =>
+                                                prev.map(f => f.diagramId === file.diagramId ? { ...f, status: "completed" } : f)
+                                            )
+                                            toast.success(`${file.name}: Analysis Complete`)
+                                        } catch (error) {
+                                            console.error("Analysis failed:", error)
+                                            const msg = error instanceof Error ? error.message : "Unknown error"
+                                            toast.error(`Analysis Failed: ${msg}`)
+
+                                            setUploadedFiles(prev =>
+                                                prev.map(f => f.diagramId === file.diagramId ? { ...f, status: "error" } : f)
+                                            )
+                                        }
+                                    }
+
+                                    // 3. Refresh Server Data
+                                    router.refresh()
                                 }}
                                 onUploadError={(error: Error) => {
                                     toast.error(`Error: ${error.message}`)

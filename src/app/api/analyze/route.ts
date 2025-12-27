@@ -46,8 +46,18 @@ export async function POST(req: Request) {
         })
     } catch (error) {
         console.error("Analysis error:", error)
+        const errorMessage = error instanceof Error ? error.message : "Analysis failed"
+
+        // Check for common OpenAI errors
+        if (errorMessage.includes("401")) {
+            return NextResponse.json({ error: "OpenAI API Key Invalid" }, { status: 500 })
+        }
+        if (errorMessage.includes("429") || errorMessage.includes("insufficient_quota")) {
+            return NextResponse.json({ error: "OpenAI API Quota Exceeded" }, { status: 500 })
+        }
+
         return NextResponse.json(
-            { error: "Analysis failed" },
+            { error: errorMessage },
             { status: 500 }
         )
     }
