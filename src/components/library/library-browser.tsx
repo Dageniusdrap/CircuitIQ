@@ -19,12 +19,21 @@ export function LibraryBrowser({ diagrams }: LibraryBrowserProps) {
     const [searchQuery, setSearchQuery] = useState("")
 
     // Filter by vehicle type
-    const categoryDiagrams = diagrams.filter(d =>
-        d.vehicleType.toLowerCase() === selectedCategory.toLowerCase() ||
-        (selectedCategory === "automotive" && d.vehicleType === "AUTOMOTIVE") ||
-        (selectedCategory === "aircraft" && d.vehicleType === "AIRCRAFT") ||
-        (selectedCategory === "electric" && d.vehicleType === "ELECTRIC_VEHICLE")
-    )
+    // Filter by vehicle type AND search query
+    const categoryDiagrams = diagrams.filter(d => {
+        const matchesCategory =
+            (selectedCategory === "aircraft" && d.vehicleType === "AIRCRAFT") ||
+            (selectedCategory === "automotive" && d.vehicleType === "AUTOMOTIVE") ||
+            (selectedCategory === "marine" && d.vehicleType === "MARINE") ||
+            (selectedCategory === "electric" && d.vehicleType === "ELECTRIC_VEHICLE")
+
+        const matchesSearch = searchQuery === "" ||
+            d.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            d.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (d.system && d.system.toLowerCase().includes(searchQuery.toLowerCase()))
+
+        return matchesCategory && matchesSearch
+    })
 
     // Group by ATA Chapter (for Aircraft) or System (for others)
     const groupedDiagrams = categoryDiagrams.reduce((acc, diagram) => {
