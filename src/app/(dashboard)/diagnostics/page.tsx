@@ -7,12 +7,24 @@ export const metadata: Metadata = {
     description: "Chat with your AI diagnostic teammate",
 }
 
+import { DiagramSelector } from "@/components/diagnostics/diagram-selector"
+
 export default async function DiagnosticsPage(props: {
     searchParams: Promise<{ diagramId?: string }>
 }) {
     const searchParams = await props.searchParams
     let vehicleInfo: { make: string, model: string, type: "aircraft" | "automotive" | "marine" } = { make: "Generic", model: "Vehicle", type: "aircraft" }
     let diagramContext = null
+
+    // If no diagram selected, show selector
+    if (!searchParams.diagramId) {
+        const diagrams = await prisma.diagram.findMany({
+            orderBy: { createdAt: "desc" },
+            take: 50
+        })
+
+        return <DiagramSelector diagrams={diagrams} />
+    }
 
     if (searchParams.diagramId) {
         const diagram = await prisma.diagram.findUnique({
@@ -26,6 +38,14 @@ export default async function DiagnosticsPage(props: {
                 type: (diagram.vehicleType.toLowerCase() as "aircraft" | "automotive" | "marine") || "aircraft"
             }
             diagramContext = diagram
+        } else {
+            // Diagram ID provided but not found - likely deleted or invalid
+            // Show selector instead of broken chat
+            const diagrams = await prisma.diagram.findMany({
+                orderBy: { createdAt: "desc" },
+                take: 50
+            })
+            return <DiagramSelector diagrams={diagrams} />
         }
     }
 
