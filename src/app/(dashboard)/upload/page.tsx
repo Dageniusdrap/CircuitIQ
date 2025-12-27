@@ -12,6 +12,8 @@ export const metadata: Metadata = {
     description: "Upload and process wiring diagrams",
 }
 
+export const dynamic = "force-dynamic"
+
 export default async function UploadPage() {
     const recentUploads = await prisma.diagram.findMany({
         orderBy: { createdAt: "desc" },
