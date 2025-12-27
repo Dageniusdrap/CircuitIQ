@@ -98,6 +98,9 @@ export function UploadZone() {
                             <p className="text-muted-foreground text-lg">
                                 Drag & drop your PDF, PNG, or DWG files here to instantly analyze with AI.
                             </p>
+                            <p className="text-sm text-blue-400 font-medium bg-blue-500/10 px-3 py-1 rounded-full inline-block">
+                                ✨ Batch Upload Supported (Up to 20 files at once)
+                            </p>
                         </div>
 
                         <div
