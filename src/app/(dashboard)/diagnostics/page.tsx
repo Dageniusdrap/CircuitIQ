@@ -63,6 +63,7 @@ export default async function DiagnosticsPage(props: {
                 <TeammateChat
                     diagramId={searchParams.diagramId}
                     vehicleInfo={vehicleInfo}
+                    diagramUrl={diagramContext?.fileUrl}
                 />
             </div>
         </div>
