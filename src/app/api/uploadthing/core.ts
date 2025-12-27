@@ -34,10 +34,6 @@ export const ourFileRouter = {
             }
         })
         .onUploadComplete(async ({ metadata, file }) => {
-            console.log("Upload complete for userId:", metadata.userId)
-            console.log("File URL:", file.url)
-            console.log("File key:", file.key)
-            console.log("Vehicle type:", metadata.vehicleType)
 
             // Create initial diagram record with PENDING status
             let diagramId = "";
