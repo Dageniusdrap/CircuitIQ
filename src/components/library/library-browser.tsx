@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Diagram } from "@prisma/client"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,34 +9,58 @@ import { EmptyState } from "@/components/ui/empty-state"
 import { Folder, FileText, ChevronRight, Car, Plane, Ship, Search, Zap, Upload } from "lucide-react"
 import { ATA_CHAPTERS } from "@/lib/constants"
 import Link from "next/link"
+import { useRouter, usePathname } from "next/navigation"
 
 interface LibraryBrowserProps {
     diagrams: Diagram[]
+    initialCategory: string
+    initialSearch: string
 }
 
-export function LibraryBrowser({ diagrams }: LibraryBrowserProps) {
-    const [selectedCategory, setSelectedCategory] = useState<string>("aircraft")
-    const [searchQuery, setSearchQuery] = useState("")
+export function LibraryBrowser({ diagrams, initialCategory, initialSearch }: LibraryBrowserProps) {
+    const router = useRouter()
+    const pathname = usePathname()
 
-    // Filter by vehicle type
-    // Filter by vehicle type AND search query
-    const categoryDiagrams = diagrams.filter(d => {
-        const matchesCategory =
-            (selectedCategory === "aircraft" && d.vehicleType === "AIRCRAFT") ||
-            (selectedCategory === "automotive" && d.vehicleType === "AUTOMOTIVE") ||
-            (selectedCategory === "marine" && d.vehicleType === "MARINE") ||
-            (selectedCategory === "electric" && d.vehicleType === "ELECTRIC_VEHICLE")
+    const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory)
+    const [searchQuery, setSearchQuery] = useState(initialSearch)
 
-        const matchesSearch = searchQuery === "" ||
-            d.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            d.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (d.system && d.system.toLowerCase().includes(searchQuery.toLowerCase()))
+    // Update URL when filters change
+    const updateFilters = (category: string, search: string) => {
+        const params = new URLSearchParams()
+        if (category) params.set("category", category)
+        if (search) params.set("search", search)
 
-        return matchesCategory && matchesSearch
-    })
+        router.push(`${pathname}?${params.toString()}`)
+    }
+
+    const handleCategoryChange = (category: string) => {
+        setSelectedCategory(category) // Optimistic update
+        updateFilters(category, searchQuery)
+    }
+
+    const handleSearchChange = (value: string) => {
+        setSearchQuery(value)
+        // Debounce could be added here, but for now we'll update on every keystroke or maybe on blur/enter?
+        // Ideally debounce. For simplicity in this step, let's update.
+        // Actually, let's just update local state and have a separate effect or use debounce.
+        // For a search input that triggers server fetch, usually better to debounce.
+        // Let's implement a simple debounce.
+    }
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (searchQuery !== initialSearch) {
+                updateFilters(selectedCategory, searchQuery)
+            }
+        }, 500)
+
+        return () => clearTimeout(timer)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchQuery])
+
 
     // Group by ATA Chapter (for Aircraft) or System (for others)
-    const groupedDiagrams = categoryDiagrams.reduce((acc, diagram) => {
+    const groupedDiagrams = diagrams.reduce((acc, diagram) => {
         const groupKey = diagram.systemCode
             ? `${diagram.systemCode} - ${ATA_CHAPTERS.find(a => a.code === diagram.systemCode)?.title || diagram.system}`
             : diagram.system || "Uncategorized"
@@ -52,29 +76,33 @@ export function LibraryBrowser({ diagrams }: LibraryBrowserProps) {
                 <div className="flex gap-2 flex-wrap">
                     <Button
                         variant={selectedCategory === "aircraft" ? "default" : "outline"}
-                        onClick={() => setSelectedCategory("aircraft")}
+                        onClick={() => handleCategoryChange("aircraft")}
                         className="gap-2"
+                        size="sm"
                     >
                         <Plane className="h-4 w-4" /> Aviation (ATA)
                     </Button>
                     <Button
                         variant={selectedCategory === "automotive" ? "default" : "outline"}
-                        onClick={() => setSelectedCategory("automotive")}
+                        onClick={() => handleCategoryChange("automotive")}
                         className="gap-2"
+                        size="sm"
                     >
                         <Car className="h-4 w-4" /> Automotive
                     </Button>
                     <Button
                         variant={selectedCategory === "marine" ? "default" : "outline"}
-                        onClick={() => setSelectedCategory("marine")}
+                        onClick={() => handleCategoryChange("marine")}
                         className="gap-2"
+                        size="sm"
                     >
                         <Ship className="h-4 w-4" /> Marine
                     </Button>
                     <Button
                         variant={selectedCategory === "electric" ? "default" : "outline"}
-                        onClick={() => setSelectedCategory("electric")}
+                        onClick={() => handleCategoryChange("electric")}
                         className="gap-2"
+                        size="sm"
                     >
                         <Zap className="h-4 w-4" /> Electric Cars
                     </Button>
@@ -83,10 +111,10 @@ export function LibraryBrowser({ diagrams }: LibraryBrowserProps) {
                 <div className="relative w-full md:w-64">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-500" />
                     <Input
-                        placeholder="Search manuals..."
+                        placeholder="Search current view..."
                         className="pl-8"
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={(e) => handleSearchChange(e.target.value)}
                     />
                 </div>
             </div>
@@ -126,11 +154,11 @@ export function LibraryBrowser({ diagrams }: LibraryBrowserProps) {
                 ))}
             </div>
 
-            {categoryDiagrams.length === 0 && (
+            {diagrams.length === 0 && (
                 <EmptyState
                     icon={Upload}
-                    title="No diagrams yet"
-                    description={`Upload your first ${selectedCategory === "aircraft" ? "aviation" : selectedCategory} wiring diagram to get started with AI-powered analysis.`}
+                    title="No diagrams found"
+                    description={`Upload your first ${selectedCategory === "aircraft" ? "aviation" : selectedCategory} wiring diagram or try a different search.`}
                     actionLabel="Upload Diagram"
                     actionHref="/upload"
                 />
