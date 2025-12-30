@@ -131,10 +131,13 @@ export function UploadZone() {
                                     toast.success("File uploaded successfully!")
                                     toast.info("Starting AI Analysis...")
 
-                                    // 3. Refresh Server Data immediately so it shows in the list below
-                                    router.refresh()
+                                    // 2. Import the server action dynamically to avoid bundling issues
+                                    const { refreshUploadPage } = await import("@/actions/upload")
 
-                                    // 2. Trigger Analysis for each file
+                                    // 3. Refresh Server Data immediately so it shows in the list below
+                                    await refreshUploadPage()
+
+                                    // 4. Trigger Analysis for each file
                                     for (const file of newFiles) {
                                         if (!file.diagramId) continue
 
@@ -155,7 +158,9 @@ export function UploadZone() {
                                                 prev.map(f => f.diagramId === file.diagramId ? { ...f, status: "completed" } : f)
                                             )
                                             toast.success(`${file.name}: AI Analysis Complete`)
-                                            router.refresh() // Refresh again to show analysis status in list
+
+                                            // Refresh again to show analysis status in list
+                                            await refreshUploadPage()
                                         } catch (error) {
                                             console.error("Analysis failed:", error)
                                             // Even if analysis fails, the file is uploaded. We can mark it as completed (uploaded) but maybe with a warning?
