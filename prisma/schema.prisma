@@ -57,6 +57,7 @@ model User {
   diagrams      Diagram[]
   analyses      Analysis[]
   subscription  Subscription?
+  feedback      Feedback[]
   
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -581,4 +582,37 @@ model PartSource {
   
   @@index([partNumber])
   @@index([vendor])
+}
+
+// ============================================
+// FEEDBACK MODELS
+// ============================================
+
+model Feedback {
+  id          String   @id @default(cuid())
+  
+  // User Information
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Feedback Type
+  type        String   // bug, feature, improvement, other
+  title       String
+  description String   @db.Text
+  
+  // Context
+  page        String?  // URL or page name where feedback was submitted
+  rating      Int?     // Optional 1-5 rating
+  
+  // Status
+  status      String   @default("pending") // pending, reviewing, planned, implemented, rejected
+  adminNotes  String?  @db.Text
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
 }

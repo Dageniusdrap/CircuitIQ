@@ -2,6 +2,7 @@
 
 import { Bell, Settings, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { FeedbackDialog } from "@/components/feedback/feedback-dialog"
 import Link from "next/link"
 import {
     DropdownMenu,
@@ -19,6 +20,8 @@ export function Header() {
                 {/* Page title rendered by content */}
             </div>
             <div className="flex items-center gap-2">
+                <FeedbackDialog />
+
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="relative text-slate-400 hover:text-white">
