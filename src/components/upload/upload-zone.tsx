@@ -118,7 +118,7 @@ export function UploadZone() {
                                         name: file.name,
                                         url: file.url,
                                         key: file.key,
-                                        status: "processing", // Start as processing
+                                        status: "processing", // Start as processing (AI analysis)
                                         progress: 100,
                                         diagramId: (file.serverData as { diagramId?: string })?.diagramId
                                     }))
@@ -128,7 +128,11 @@ export function UploadZone() {
                                         return [...filtered, ...newFiles]
                                     })
 
-                                    toast.info("AI Analysis in progress...")
+                                    toast.success("File uploaded successfully!")
+                                    toast.info("Starting AI Analysis...")
+
+                                    // 3. Refresh Server Data immediately so it shows in the list below
+                                    router.refresh()
 
                                     // 2. Trigger Analysis for each file
                                     for (const file of newFiles) {
@@ -150,20 +154,20 @@ export function UploadZone() {
                                             setUploadedFiles(prev =>
                                                 prev.map(f => f.diagramId === file.diagramId ? { ...f, status: "completed" } : f)
                                             )
-                                            toast.success(`${file.name}: Analysis Complete`)
+                                            toast.success(`${file.name}: AI Analysis Complete`)
+                                            router.refresh() // Refresh again to show analysis status in list
                                         } catch (error) {
                                             console.error("Analysis failed:", error)
-                                            const msg = error instanceof Error ? error.message : "Unknown error"
-                                            toast.error(`Analysis Failed: ${msg}`)
+                                            // Even if analysis fails, the file is uploaded. We can mark it as completed (uploaded) but maybe with a warning?
+                                            // For now, let's mark it as error only for the queue item, but the file exists.
 
                                             setUploadedFiles(prev =>
                                                 prev.map(f => f.diagramId === file.diagramId ? { ...f, status: "error" } : f)
                                             )
+                                            const msg = error instanceof Error ? error.message : "Unknown error"
+                                            toast.error(`Analysis Failed: ${msg}`)
                                         }
                                     }
-
-                                    // 3. Refresh Server Data
-                                    router.refresh()
                                 }}
                                 onUploadError={(error: Error) => {
                                     toast.error(`Error: ${error.message}`)

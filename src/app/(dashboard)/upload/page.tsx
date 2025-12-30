@@ -6,6 +6,7 @@ import { FileText, Clock, ArrowRight, CheckCircle } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { formatDistanceToNow } from "date-fns"
+import { DeleteButton } from "@/components/upload/delete-button"
 
 export const metadata: Metadata = {
     title: "Upload Diagrams | CircuitIQ",
@@ -68,13 +69,21 @@ export default async function UploadPage() {
                                 </div>
 
                                 <div className="flex items-center gap-3">
-                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-xs font-medium border border-emerald-500/20">
-                                        <CheckCircle className="h-3 w-3" />
-                                        Processed
-                                    </div>
+                                    {diagram.status === "COMPLETED" ? (
+                                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-xs font-medium border border-emerald-500/20">
+                                            <CheckCircle className="h-3 w-3" />
+                                            Processed
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-500 text-xs font-medium border border-blue-500/20">
+                                            <Clock className="h-3 w-3" />
+                                            {diagram.status === "PROCESSING" ? "Analyzing..." : "Pending"}
+                                        </div>
+                                    )}
+
                                     <Button asChild size="sm" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity">
                                         <Link href={`/diagnostics?diagramId=${diagram.id}`}>
-                                            Diagnose <ArrowRight className="ml-2 h-3.5 w-3.5" />
+                                            Diagnose
                                         </Link>
                                     </Button>
                                     <Button asChild size="sm" variant="outline" className="h-8">
@@ -82,6 +91,8 @@ export default async function UploadPage() {
                                             View
                                         </Link>
                                     </Button>
+
+                                    <DeleteButton diagramId={diagram.id} title={diagram.title} />
                                 </div>
                             </div>
                         ))}
