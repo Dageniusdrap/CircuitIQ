@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Sensitive files - do not commit
+docs/LOGIN_CREDENTIALS.md
+TOMORROW_LOGIN_FIX.md
