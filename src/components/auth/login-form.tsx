@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Eye, EyeOff, CheckCircle, AlertTriangle, Clock, ShieldAlert } from "lucide-react"
-import Link from "next/link"
 import { showDemoLoginSuccess, showAuthError, showRateLimitWarning } from "@/lib/auth-toasts"
 import { checkRateLimit, recordLoginAttempt } from "@/lib/auth-utils"
 
@@ -34,7 +33,6 @@ export function LoginForm() {
     const {
         register,
         handleSubmit,
-        watch,
         formState: { errors },
     } = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
@@ -43,7 +41,6 @@ export function LoginForm() {
         },
     })
 
-    const emailValue = watch("email")
 
     // Countdown timer for lockout
     useEffect(() => {
@@ -167,15 +164,7 @@ export function LoginForm() {
                 </div>
 
                 <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                        <Label htmlFor="password">Password</Label>
-                        <Link
-                            href="/forgot-password"
-                            className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                        >
-                            Forgot password?
-                        </Link>
-                    </div>
+                    <Label htmlFor="password">Password</Label>
                     <div className="relative">
                         <Input
                             id="password"

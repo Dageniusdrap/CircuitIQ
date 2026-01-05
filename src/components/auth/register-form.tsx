@@ -290,13 +290,6 @@ export function RegisterForm() {
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Account
             </Button>
-
-            <p className="text-center text-sm text-slate-500">
-                Already have an account?{" "}
-                <Link href="/login" className="text-blue-400 hover:text-blue-300">
-                    Sign in
-                </Link>
-            </p>
         </form>
     )
 }
