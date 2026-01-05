@@ -66,7 +66,7 @@ export default function LoginPage() {
                 </div>
 
                 {/* Footer Links */}
-                <div className="text-center space-y-3">
+                <div className="text-center">
                     <p className="text-sm text-slate-400">
                         Don&apos;t have an account?{" "}
                         <Link
@@ -76,12 +76,6 @@ export default function LoginPage() {
                             Create account
                         </Link>
                     </p>
-                    <Link
-                        href="/forgot-password"
-                        className="block text-sm text-blue-400 hover:text-blue-300 transition-colors"
-                    >
-                        Forgot your password?
-                    </Link>
                 </div>
             </div>
         </div>

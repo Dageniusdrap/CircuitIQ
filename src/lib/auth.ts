@@ -30,16 +30,17 @@ export const {
         strategy: "jwt",
     },
     providers: [
-        GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID!,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-            allowDangerousEmailAccountLinking: true,
-        }),
-        GitHubProvider({
-            clientId: process.env.GITHUB_ID!,
-            clientSecret: process.env.GITHUB_SECRET!,
-            allowDangerousEmailAccountLinking: true,
-        }),
+        // Google and GitHub OAuth temporarily disabled until credentials are configured
+        // GoogleProvider({
+        //     clientId: process.env.GOOGLE_CLIENT_ID!,
+        //     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        //     allowDangerousEmailAccountLinking: true,
+        // }),
+        // GitHubProvider({
+        //     clientId: process.env.GITHUB_ID!,
+        //     clientSecret: process.env.GITHUB_SECRET!,
+        //     allowDangerousEmailAccountLinking: true,
+        // }),
         CredentialsProvider({
             name: "credentials",
             credentials: {
