@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react"
 import {
     Dialog,
     DialogContent,
+    DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -140,6 +141,7 @@ export function WelcomeTour() {
     return (
         <Dialog open={showTour} onOpenChange={setShowTour}>
             <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
+                <DialogTitle className="sr-only">{step.title}</DialogTitle>
                 {/* Header with gradient */}
                 <div className={cn(
                     "p-6 bg-gradient-to-r text-white",
