@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db"
 import { StatCard } from "@/components/dashboard/stat-card"
 import { RecentAnalyses } from "@/components/dashboard/recent-analyses"
 import { QuickActions } from "@/components/dashboard/quick-actions"
-import { UploadedDocumentsWidget } from "@/components/upload/uploaded-documents-widget"
+import { RecentDocuments } from "@/components/dashboard/recent-documents"
 import { FileText, MessageSquare, CheckCircle, Zap } from "lucide-react"
 
 export const metadata: Metadata = {
@@ -107,12 +107,10 @@ export default async function DashboardPage() {
 
                 {/* Right Column - 1/3 width */}
                 <div className="lg:col-span-1">
-                    <UploadedDocumentsWidget
+                    <RecentDocuments
                         diagrams={recentDiagrams}
                         title="Recent Documents"
                         maxItems={8}
-                        showSearch={false}
-                        allowSelection={false}
                     />
                 </div>
             </div>

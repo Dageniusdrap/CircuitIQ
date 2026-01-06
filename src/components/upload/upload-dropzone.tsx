@@ -158,17 +158,40 @@ export function UploadDropzone({ vehicleType, onUploadComplete }: UploadDropzone
                         type="file"
                         multiple
                         accept=".pdf,.png,.jpg,.jpeg"
+                        // @ts-ignore - webkitdirectory is not in TypeScript types but works
+                        webkitdirectory=""
                         onChange={(e) => handleFiles(e.target.files)}
                         className="hidden"
                     />
 
-                    <Button
-                        onClick={() => fileInputRef.current?.click()}
-                        className="bg-primary hover:bg-primary/90"
-                    >
-                        <Upload className="w-4 h-4 mr-2" />
-                        Choose Files
-                    </Button>
+                    <div className="flex gap-3">
+                        <Button
+                            onClick={() => {
+                                if (fileInputRef.current) {
+                                    fileInputRef.current.removeAttribute('webkitdirectory')
+                                    fileInputRef.current.click()
+                                }
+                            }}
+                            className="bg-primary hover:bg-primary/90"
+                        >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Choose Files
+                        </Button>
+
+                        <Button
+                            onClick={() => {
+                                if (fileInputRef.current) {
+                                    fileInputRef.current.setAttribute('webkitdirectory', '')
+                                    fileInputRef.current.click()
+                                }
+                            }}
+                            variant="outline"
+                            className="border-primary/30 hover:bg-primary/10"
+                        >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Upload Folder
+                        </Button>
+                    </div>
 
                     <p className="text-xs text-muted-foreground mt-4">
                         Supports: PDF, PNG, JPG • Max size: 32MB
