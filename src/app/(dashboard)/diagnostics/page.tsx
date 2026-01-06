@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import { TeammateChat } from "@/components/diagnostics/teammate-chat"
 import { prisma } from "@/lib/db"
 import { DiagramSelector } from "@/components/diagnostics/diagram-selector"
-import { DiagramSelectorWidget } from "@/components/upload/diagram-selector-widget"
+import { DiagramSelectorWidget } from "@/components/diagnostics/diagram-selector-widget"
 
 export const metadata: Metadata = {
     title: "Diagnostics | CircuitIQ",
