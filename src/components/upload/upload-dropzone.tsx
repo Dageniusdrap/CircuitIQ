@@ -72,6 +72,11 @@ export function UploadDropzone({ vehicleType, onUploadComplete }: UploadDropzone
 
             toast.success(`${file.name} uploaded successfully!`)
 
+            // Trigger callback to refresh recent uploads
+            if (onUploadComplete) {
+                onUploadComplete(files)
+            }
+
         } catch (error) {
             // Update file status to error
             setFiles(prev => prev.map(f =>
