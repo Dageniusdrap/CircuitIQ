@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button"
 import { formatDistanceToNow } from "date-fns"
 import { DeleteButton } from "@/components/upload/delete-button"
 import { cn } from "@/lib/utils"
+import { auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
 
 export const metadata: Metadata = {
     title: "Upload Diagrams | CircuitIQ",
@@ -17,10 +19,27 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic"
 
 export default async function UploadPage() {
-    const recentUploads = await prisma.diagram.findMany({
-        orderBy: { createdAt: "desc" },
-        take: 5,
-    })
+    // Get the current user session
+    const session = await auth()
+
+    if (!session?.user?.id) {
+        redirect("/login")
+    }
+
+    // Fetch only the current user's diagrams
+    let recentUploads = []
+    try {
+        recentUploads = await prisma.diagram.findMany({
+            where: {
+                uploadedById: session.user.id
+            },
+            orderBy: { createdAt: "desc" },
+            take: 5,
+        })
+    } catch (error) {
+        console.error("Failed to fetch diagrams:", error)
+        // Continue with empty array - page will still load
+    }
 
     return (
         <div className="max-w-4xl mx-auto space-y-10 pb-10">
