@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json()
-        const { sessionId, action, message, imageUrl, techComment, vehicleInfo } = body
+        const { sessionId, action, message, imageUrl, diagramUrl, techComment, vehicleInfo } = body
 
         // Get or create teammate
         let teammate = activeTeammates.get(sessionId)
@@ -32,6 +32,11 @@ export async function POST(req: NextRequest) {
         // Handle different actions
         switch (action) {
             case "chat":
+                // If we have a diagram URL, use vision analysis
+                if (diagramUrl) {
+                    const visionResponse = await teammate.lookAtPhoto(diagramUrl, message)
+                    return NextResponse.json(visionResponse)
+                }
                 const response = await teammate.communicate(message)
                 return NextResponse.json(response)
 

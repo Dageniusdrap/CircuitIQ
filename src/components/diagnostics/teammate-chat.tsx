@@ -112,6 +112,7 @@ export function TeammateChat({ vehicleInfo, diagramUrl, onComponentHighlight }: 
                     action: "chat",
                     message: textToSend,
                     vehicleInfo,
+                    diagramUrl, // Include diagram URL for vision analysis
                 }),
             })
 

@@ -292,36 +292,44 @@ You're standing next to them, helping them troubleshoot in real-time.`,
     async lookAtPhoto(imageUrl: string, techComment?: string): Promise<TeammateResponse> {
         try {
             const response = await openai.chat.completions.create({
-                model: "gpt-4-vision-preview",
+                model: "gpt-4o", // Updated to latest vision model
                 messages: [
                     {
                         role: "system",
-                        content: `You're looking at a photo your teammate just showed you while troubleshooting.
-React naturally like a real engineer would:
-- Point out what you see: "I can see that connector..."
-- Notice details: "Look at those pins, they're corroded"
-- Express reactions: "Whoa, yeah that's definitely..." "Hmm, interesting..."
-- Ask follow-up questions: "Can you get closer to..." "Is that...?"
-- Relate to the problem: "That explains why..."`,
+                        content: `You're an expert wiring diagram analyst helping troubleshoot electrical systems.
+When looking at a wiring diagram, you should:
+- Identify all visible components (relays, switches, connectors, fuses, etc.)
+- Read wire labels and gauge sizes
+- Trace circuit paths and connections
+- Identify ground points and power sources
+- Point out any visible issues or concerns
+- Explain the circuit flow in simple terms
+- Relate what you see to potential failures
+
+Be specific and technical but conversational. Reference actual component names and wire numbers you see.`,
                     },
                     {
                         role: "user",
                         content: [
                             {
                                 type: "text",
-                                text: `We're troubleshooting: ${this.diagnosticState.mainSymptom}
-${techComment ? `Tech says: "${techComment}"` : "Tech just showed this photo"}
+                                text: `We're troubleshooting: ${this.diagnosticState.mainSymptom || "this electrical system"}
+${techComment ? `Tech says: "${techComment}"` : "Please analyze this wiring diagram in detail."}
 
-Look at this photo and respond like their teammate would.`,
+Look at this diagram and tell me:
+1. What major components do you see?
+2. What is the main circuit flow?
+3. What could cause failures in this system?
+4. Any specific areas of concern?`,
                             },
                             {
                                 type: "image_url",
-                                image_url: { url: imageUrl, detail: "high" },
+                                image_url: { url: imageUrl },
                             },
                         ],
                     },
                 ],
-                max_tokens: 300,
+                max_tokens: 500,
             })
 
             const message = response.choices[0].message.content || "I see the photo. Can you zoom in?"
@@ -331,9 +339,11 @@ Look at this photo and respond like their teammate would.`,
                 tone: "observant",
                 timestamp: new Date().toISOString(),
             }
-        } catch {
+        } catch (error) {
+            console.error("Vision API Error:", error)
+            console.error("Image URL attempted:", imageUrl)
             return {
-                message: "Having trouble loading that photo. Can you describe what you're seeing?",
+                message: `Having trouble loading that photo. Can you describe what you're seeing?`,
                 tone: "helpful",
                 timestamp: new Date().toISOString(),
             }

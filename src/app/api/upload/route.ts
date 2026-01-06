@@ -66,7 +66,7 @@ export async function POST(request: Request) {
                 model: 'Unknown', // User can update later  
                 system: 'Electrical', // Default system
                 uploadedById: session.user.id,
-                status: 'PENDING',
+                status: 'COMPLETED', // File is ready immediately after upload
             },
         });
 
