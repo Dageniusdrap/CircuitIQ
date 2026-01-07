@@ -187,6 +187,10 @@ model Diagram {
   fileSize        Int               // in bytes
   thumbnailUrl    String?
   
+  // AI Vision Support (for PDF diagrams)
+  analysisImageUrl String?          // PNG version for AI vision (if original is PDF)
+  analysisImageKey String?          // Blob storage key for PNG
+  
   // Processing Status
   status          ProcessingStatus  @default(PENDING)
   processingStartedAt DateTime?
