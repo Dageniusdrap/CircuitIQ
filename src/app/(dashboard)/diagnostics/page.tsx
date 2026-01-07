@@ -3,6 +3,8 @@ import { TeammateChat } from "@/components/diagnostics/teammate-chat"
 import { prisma } from "@/lib/db"
 import { DiagramSelector } from "@/components/diagnostics/diagram-selector"
 import { DiagramSelectorWidget } from "@/components/diagnostics/diagram-selector-widget"
+import { auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
 
 export const metadata: Metadata = {
     title: "Diagnostics | CircuitIQ",
@@ -12,12 +14,21 @@ export const metadata: Metadata = {
 export default async function DiagnosticsPage(props: {
     searchParams: Promise<{ diagramId?: string }>
 }) {
+    // Check authentication first
+    const session = await auth()
+    if (!session?.user?.id) {
+        redirect("/login")
+    }
+
     const searchParams = await props.searchParams
     let vehicleInfo: { make: string, model: string, type: "aircraft" | "automotive" | "marine" } = { make: "Generic", model: "Vehicle", type: "aircraft" }
     let diagramContext = null
 
-    // Fetch all diagrams for the widget
+    // Fetch user's diagrams for the widget
     const allDiagrams = await prisma.diagram.findMany({
+        where: {
+            uploadedById: session.user.id,
+        },
         orderBy: { createdAt: "desc" },
         take: 50
     })
