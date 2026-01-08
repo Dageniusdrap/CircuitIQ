@@ -233,7 +233,7 @@ export function SearchInterface() {
                                             <CardContent className="pt-6">
                                                 <div className="space-y-3">
                                                     <div className="flex items-start justify-between gap-2">
-                                                        {getVehicleIcon(diagram.vehicle Type)}
+                                                        {getVehicleIcon(diagram.vehicleType)}
                                                         <Badge variant="outline" className="text-xs">
                                                             {diagram.vehicleType?.replace('_', ' ')}
                                                         </Badge>
