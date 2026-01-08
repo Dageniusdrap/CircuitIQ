@@ -50,6 +50,7 @@ export async function convertPDFToPNG(
         // Render PDF page to canvas
         const renderContext = {
             canvasContext: context as any,
+            canvas: canvas as any,
             viewport: viewport,
         };
 
@@ -124,6 +125,7 @@ export async function convertPDFPagesToPNG(
 
             await page.render({
                 canvasContext: context as any,
+                canvas: canvas as any,
                 viewport: viewport,
             }).promise;
 
