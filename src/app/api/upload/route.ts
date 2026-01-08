@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { convertPDFToPNG, isPDF } from '@/lib/pdf-converter';
+import { trackUsage, checkUsageLimit } from '@/lib/usage-tracking';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -15,6 +16,21 @@ export async function POST(request: Request) {
             return NextResponse.json(
                 { error: 'Unauthorized' },
                 { status: 401 }
+            );
+        }
+
+        // Check usage limits
+        const usageCheck = await checkUsageLimit(session.user.id, 'DIAGRAM_UPLOAD');
+        if (!usageCheck.allowed) {
+            return NextResponse.json(
+                {
+                    error: 'Upload limit reached',
+                    message: `You've reached your upload limit of ${usageCheck.limit} diagrams this month. Please upgrade your plan to upload more.`,
+                    current: usageCheck.current,
+                    limit: usageCheck.limit,
+                    percentage: usageCheck.percentage,
+                },
+                { status: 429 } // Too Many Requests
             );
         }
 
@@ -113,6 +129,19 @@ export async function POST(request: Request) {
                 analysisImageKey: pngKey,
             },
         });
+
+        // Track usage (don't block on this)
+        trackUsage({
+            userId: session.user.id,
+            action: 'DIAGRAM_UPLOAD',
+            resourceId: diagram.id,
+            metadata: {
+                fileSize: file.size,
+                fileType: file.type,
+                isPDF: isPDF(file.type),
+                hasAIImage: !!pngUrl,
+            },
+        }).catch(err => console.error('Failed to track usage:', err));
 
         return NextResponse.json({
             success: true,

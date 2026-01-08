@@ -52,12 +52,14 @@ model User {
   plan                 SubscriptionPlan @default(FREE)
   
   // Relations
-  accounts      Account[]
-  sessions      Session[]
-  diagrams      Diagram[]
-  analyses      Analysis[]
-  subscription  Subscription?
-  feedback      Feedback[]
+  accounts       Account[]
+  sessions       Session[]
+  diagrams       Diagram[]
+  analyses       Analysis[]
+  subscription   Subscription?
+  feedback       Feedback[]
+  usageRecords   UsageRecord[]
+  usageSummaries UsageSummary[]
   
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -619,4 +621,107 @@ model Feedback {
   @@index([type])
   @@index([status])
   @@index([createdAt])
+}
+
+// ============================================
+// USAGE TRACKING MODELS
+// ============================================
+
+// Track user actions for analytics and billing
+model UsageRecord {
+  id          String   @id @default(cuid())
+  
+  // User Information
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Action Type
+  action      UsageAction
+  resourceId  String?  // ID of diagram, analysis, etc.
+  
+  // Metadata
+  metadata    Json?    // Additional context (file size, duration, etc.)
+  
+  // Billing period tracking
+  billingPeriodStart DateTime
+  billingPeriodEnd   DateTime
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([billingPeriodStart, billingPeriodEnd])
+}
+
+enum UsageAction {
+  DIAGRAM_UPLOAD
+  AI_ANALYSIS
+  PROCEDURE_VIEW
+  EXPORT_PDF
+  EXPORT_DXF
+  API_CALL
+}
+
+// Monthly usage summary for faster queries
+model UsageSummary {
+  id              String   @id @default(cuid())
+  
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Time period
+  month           Int      // 1-12
+  year            Int      // 2026
+  
+  // Counts
+  diagramUploads  Int      @default(0)
+  aiAnalyses      Int      @default(0)
+  procedureViews  Int      @default(0)
+  pdfExports      Int      @default(0)
+  dxfExports      Int      @default(0)
+  apiCalls        Int      @default(0)
+  
+  // Limits (copy from plan at time of creation)
+  uploadLimit     Int?
+  analysisLimit   Int?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([userId, month, year])
+  @@index([userId])
+  @@index([year, month])
+}
+
+// Plan limits configuration
+model PlanLimits {
+  id            String           @id @default(cuid())
+  
+  plan          SubscriptionPlan @unique
+  
+  // Monthly limits
+  diagramUploadsPerMonth  Int?  // null = unlimited
+  aiAnalysesPerMonth      Int?
+  procedureViewsPerMonth  Int?
+  pdfExportsPerMonth      Int?
+  dxfExportsPerMonth      Int?
+  apiCallsPerMonth        Int?
+  
+  // Storage limits
+  maxStorageGB            Int?
+  maxFileSize            Int?  // in MB
+  
+  // Feature flags
+  teamCollaboration       Boolean @default(false)
+  apiAccess               Boolean @default(false)
+  prioritySupport         Boolean @default(false)
+  customAITraining        Boolean @default(false)
+  whiteLabeling           Boolean @default(false)
+  
+  // Team limits
+  maxTeamMembers          Int?
+  
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
 }
