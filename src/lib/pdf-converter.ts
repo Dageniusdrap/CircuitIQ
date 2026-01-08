@@ -1,10 +1,10 @@
-import * as pdfjsLib from 'pdfjs-dist';
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { createCanvas } from 'canvas';
 
-// Configure PDF.js worker
+// Configure PDF.js worker for server-side (Node.js)
 if (typeof window === 'undefined') {
-    // Server-side configuration
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+    // Point to the legacy worker for Node.js environments
+    pdfjsLib.GlobalWorkerOptions.workerSrc = require.resolve('pdfjs-dist/legacy/build/pdf.worker.min.mjs');
 }
 
 export interface PDFConversionResult {
