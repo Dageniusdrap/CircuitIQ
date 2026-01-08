@@ -1,18 +1,28 @@
 import { Metadata } from "next"
+import { auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
 import { SearchInterface } from "@/components/search/search-interface"
 
 export const metadata: Metadata = {
     title: "Search | CircuitIQ",
-    description: "Search your wiring diagram library",
+    description: "Search across diagrams and procedures",
 }
 
-export default function SearchPage() {
+export default async function SearchPage() {
+    const session = await auth()
+
+    if (!session?.user) {
+        redirect("/login")
+    }
+
     return (
-        <div className="max-w-4xl mx-auto space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold">Search Library</h1>
-                <p className="text-slate-400 mt-1">
-                    Find components, wiring diagrams, and diagnostic history
+        <div className="space-y-6">
+            <div className="space-y-2">
+                <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text">
+                    Search
+                </h1>
+                <p className="text-muted-foreground text-lg">
+                    Find diagrams, procedures, and documentation across CircuitIQ
                 </p>
             </div>
 
