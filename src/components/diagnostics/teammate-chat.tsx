@@ -87,6 +87,68 @@ export function TeammateChat({ vehicleInfo, diagramUrl, onComponentHighlight }: 
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
     }, [messages])
 
+    // 🚀 AUTO-ANALYSIS: Automatically analyze diagram when loaded
+    useEffect(() => {
+        const performAutoAnalysis = async () => {
+            // Only run if we have a diagram URL and haven't analyzed yet
+            if (!diagramUrl || messages.length > 1) return;
+
+            // Wait a moment for UI to settle
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            setIsTyping(true);
+
+            try {
+                const response = await fetch("/api/teammate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        sessionId,
+                        action: "photo", // Use photo analysis
+                        vehicleInfo,
+                        imageUrl: diagramUrl,
+                        analysisType: "comprehensive", // Get full analysis
+                    }),
+                });
+
+                if (!response.ok) throw new Error("Auto-analysis failed");
+
+                const data = await response.json();
+
+                // Replace initial greeting with analysis results
+                const analysisMessage: Message = {
+                    id: nanoid(),
+                    role: "assistant",
+                    content: `📊 **Auto-Analysis Complete**\n\n${data.message}\n\n💬 **Questions?** Feel free to ask anything or let me know if you need help troubleshooting specific issues!`,
+                    tone: "professional",
+                    timestamp: data.timestamp,
+                    diagnosticData: data.diagnosticData,
+                    quickSuggestions: [
+                        "Explain this in more detail",
+                        "What should I test first?",
+                        "Help me troubleshoot",
+                        "Show me the key components"
+                    ],
+                };
+
+                setMessages([analysisMessage]);
+
+                // Highlight components if provided
+                if (data.highlightComponents && onComponentHighlight) {
+                    onComponentHighlight(data.highlightComponents);
+                }
+            } catch (error) {
+                console.error("Auto-analysis error:", error);
+                // Keep original greeting if auto-analysis fails
+            } finally {
+                setIsTyping(false);
+            }
+        };
+
+        performAutoAnalysis();
+    }, [diagramUrl, sessionId, vehicleInfo, onComponentHighlight]); // eslint-disable-line react-hooks/exhaustive-deps
+
+
     // Send message to teammate
     const sendMessage = async (messageText?: string) => {
         const textToSend = messageText || input.trim()
