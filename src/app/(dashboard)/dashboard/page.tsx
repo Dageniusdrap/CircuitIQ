@@ -5,6 +5,7 @@ import { StatCard } from "@/components/dashboard/stat-card"
 import { RecentAnalyses } from "@/components/dashboard/recent-analyses"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { RecentDocuments } from "@/components/dashboard/recent-documents"
+import { UsageDashboard } from "@/components/dashboard/usage-dashboard"
 import { FileText, MessageSquare, CheckCircle, Zap } from "lucide-react"
 
 export const metadata: Metadata = {
@@ -96,6 +97,9 @@ export default async function DashboardPage() {
                     color="bg-amber-600"
                 />
             </div>
+
+            {/* Usage Dashboard */}
+            <UsageDashboard userPlan={session?.user?.plan || 'FREE'} />
 
             {/* Main Content Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
