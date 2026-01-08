@@ -74,11 +74,7 @@ export default async function DiagnosticsPage(props: {
                     <TeammateChat
                         diagramId={searchParams.diagramId}
                         vehicleInfo={vehicleInfo}
-                        diagramUrl={
-                            // Use PNG for AI vision if available (from PDF conversion)
-                            // Otherwise use original file URL (already an image)
-                            diagramContext?.analysisImageUrl || diagramContext?.fileUrl
-                        }
+                        diagramUrl={diagramContext?.fileUrl}
                     />
                 </div>
 
