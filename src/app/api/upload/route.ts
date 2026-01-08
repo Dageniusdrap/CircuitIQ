@@ -19,19 +19,24 @@ export async function POST(request: Request) {
             );
         }
 
-        // Check usage limits
-        const usageCheck = await checkUsageLimit(session.user.id, 'DIAGRAM_UPLOAD');
-        if (!usageCheck.allowed) {
-            return NextResponse.json(
-                {
-                    error: 'Upload limit reached',
-                    message: `You've reached your upload limit of ${usageCheck.limit} diagrams this month. Please upgrade your plan to upload more.`,
-                    current: usageCheck.current,
-                    limit: usageCheck.limit,
-                    percentage: usageCheck.percentage,
-                },
-                { status: 429 } // Too Many Requests
-            );
+        // Check usage limits (don't block upload if this fails)
+        try {
+            const usageCheck = await checkUsageLimit(session.user.id, 'DIAGRAM_UPLOAD');
+            if (!usageCheck.allowed) {
+                return NextResponse.json(
+                    {
+                        error: 'Upload limit reached',
+                        message: `You've reached your upload limit of ${usageCheck.limit} diagrams this month. Please upgrade your plan to upload more.`,
+                        current: usageCheck.current,
+                        limit: usageCheck.limit,
+                        percentage: usageCheck.percentage,
+                    },
+                    { status: 429 } // Too Many Requests
+                );
+            }
+        } catch (limitError) {
+            console.error('Error checking usage limits:', limitError);
+            // Continue with upload even if limit check fails
         }
 
         // Parse form data
