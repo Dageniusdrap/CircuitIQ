@@ -3,6 +3,7 @@ import { TeammateChat } from "@/components/diagnostics/teammate-chat"
 import { prisma } from "@/lib/db"
 import { DiagramSelector } from "@/components/diagnostics/diagram-selector"
 import { DiagramSelectorWidget } from "@/components/diagnostics/diagram-selector-widget"
+import { WireTracing } from "@/components/diagnostics/wire-tracing"
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 
@@ -80,6 +81,11 @@ export default async function DiagnosticsPage(props: {
 
                 {/* Sidebar with Uploaded Documents */}
                 <div className="lg:col-span-1 space-y-4">
+                    {/* Wire Tracing */}
+                    {searchParams.diagramId && (
+                        <WireTracing diagramId={searchParams.diagramId} />
+                    )}
+
                     <DiagramSelectorWidget
                         diagrams={allDiagrams}
                         title="Switch Diagram"
