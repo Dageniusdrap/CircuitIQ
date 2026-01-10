@@ -75,7 +75,7 @@ export default async function DiagnosticsPage(props: {
                     <TeammateChat
                         diagramId={searchParams.diagramId}
                         vehicleInfo={vehicleInfo}
-                        diagramUrl={diagramContext?.fileUrl}
+                        diagramUrl={diagramContext?.analysisImageUrl || diagramContext?.fileUrl}
                     />
                 </div>
 

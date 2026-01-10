@@ -1,8 +1,7 @@
-import { put } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { convertPDFToPNG, isPDF } from '@/lib/pdf-converter';
+import { uploadPDFToCloudinary, uploadImageToCloudinary } from '@/lib/cloudinary';
 import { trackUsage, checkUsageLimit } from '@/lib/usage-tracking';
 
 export const runtime = 'nodejs';
@@ -69,58 +68,57 @@ export async function POST(request: Request) {
             );
         }
 
-        // Upload original file to Vercel Blob
-        const blob = await put(file.name, file, {
-            access: 'public',
-            addRandomSuffix: true,
-        });
+        console.log(`📤 Uploading: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
 
-        let pngUrl: string | null = null;
-        let pngKey: string | null = null;
+        // Convert file to buffer
+        const arrayBuffer = await file.arrayBuffer();
+        const fileBuffer = Buffer.from(arrayBuffer);
 
-        // If PDF, convert to PNG for AI vision
-        if (isPDF(file.type)) {
-            console.log('PDF detected, converting to PNG for AI vision...');
+        let fileUrl: string;
+        let imageUrl: string;
+        let cloudinaryPublicId: string;
+        const isPDF = file.type === 'application/pdf';
 
-            try {
-                // Convert file to buffer
-                const arrayBuffer = await file.arrayBuffer();
-                const pdfBuffer = Buffer.from(arrayBuffer);
+        if (isPDF) {
+            // Upload PDF to Cloudinary - gets automatic image conversion!
+            console.log('📄 PDF detected - uploading to Cloudinary for conversion...');
 
-                // Convert first page to PNG (high quality for AI)
-                const conversion = await convertPDFToPNG(pdfBuffer, {
-                    scale: 2.5, // High quality for AI vision
-                    format: 'buffer'
-                });
+            const cloudinaryResult = await uploadPDFToCloudinary(fileBuffer, file.name);
 
-                if (conversion.success && conversion.pngBuffer) {
-                    // Upload PNG to Vercel Blob
-                    const pngFileName = file.name.replace(/\.pdf$/i, '.png');
-                    const pngBlob = await put(pngFileName, conversion.pngBuffer, {
-                        access: 'public',
-                        addRandomSuffix: true,
-                        contentType: 'image/png',
-                    });
-
-                    pngUrl = pngBlob.url;
-                    pngKey = pngBlob.pathname;
-
-                    console.log('✅ PDF converted to PNG successfully');
-                } else {
-                    console.warn('⚠️ PDF conversion failed:', conversion.error);
-                }
-            } catch (conversionError) {
-                console.error('PDF conversion error:', conversionError);
-                // Continue with upload even if conversion fails
+            if (!cloudinaryResult.success) {
+                throw new Error(cloudinaryResult.error || 'PDF upload failed');
             }
+
+            fileUrl = cloudinaryResult.pdfUrl!;
+            imageUrl = cloudinaryResult.imageUrl!;
+            cloudinaryPublicId = cloudinaryResult.publicId!;
+
+            console.log('✅ PDF uploaded and converted to image!');
+            console.log('   PDF URL:', file Url);
+            console.log('   Image URL:', imageUrl);
+        } else {
+            // Upload image to Cloudinary
+            console.log('🖼️ Image detected - uploading to Cloudinary...');
+
+            const cloudinaryResult = await uploadImageToCloudinary(fileBuffer, file.name);
+
+            if (!cloudinaryResult.success) {
+                throw new Error(cloudinaryResult.error || 'Image upload failed');
+            }
+
+            fileUrl = cloudinaryResult.imageUrl!;
+            imageUrl = cloudinaryResult.imageUrl!;
+            cloudinaryPublicId = cloudinaryResult.publicId!;
+
+            console.log('✅ Image uploaded!');
         }
 
         // Create database record
         const diagram = await prisma.diagram.create({
             data: {
                 title: file.name.replace(/\.[^/.]+$/, ''), // Remove file extension
-                fileUrl: blob.url,
-                fileKey: blob.pathname,
+                fileUrl: fileUrl, // Cloudinary URL
+                fileKey: cloudinaryPublicId, // Cloudinary public ID
                 fileSize: file.size,
                 fileType: file.type,
                 vehicleType: (vehicleType as any) || 'AIRCRAFT',
@@ -129,9 +127,9 @@ export async function POST(request: Request) {
                 system: 'Electrical', // Default system
                 uploadedById: session.user.id,
                 status: 'COMPLETED', // File is ready immediately after upload
-                // Store PNG URL for AI vision (if PDF was converted)
-                analysisImageUrl: pngUrl,
-                analysisImageKey: pngKey,
+                // Store image URL for AI vision (converted from PDF if needed)
+                analysisImageUrl: imageUrl,
+                analysisImageKey: cloudinaryPublicId,
             },
         });
 
@@ -143,8 +141,9 @@ export async function POST(request: Request) {
             metadata: {
                 fileSize: file.size,
                 fileType: file.type,
-                isPDF: isPDF(file.type),
-                hasAIImage: !!pngUrl,
+                isPDF: isPDF,
+                hasAIImage: true, // Cloudinary always provides an image
+                cloudinary: true,
             },
         }).catch(err => console.error('Failed to track usage:', err));
 
@@ -152,12 +151,12 @@ export async function POST(request: Request) {
             success: true,
             diagram: {
                 id: diagram.id,
-                url: blob.url,
-                pngUrl: pngUrl, // Include PNG URL for AI vision
+                url: fileUrl,
+                imageUrl: imageUrl, // Image URL for AI analysis
                 name: file.name,
                 size: file.size,
-                isPDF: isPDF(file.type),
-                hasAIImage: !!pngUrl,
+                isPDF: isPDF,
+                hasAIImage: true,
             },
         });
 

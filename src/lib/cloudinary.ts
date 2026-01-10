@@ -1,11 +1,15 @@
 import { v2 as cloudinary } from 'cloudinary';
 
-// Configure Cloudinary
-cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+// Ensure Cloudinary is configured (lazy initialization)
+function ensureCloudinaryConfigured() {
+    if (!cloudinary.config().cloud_name) {
+        cloudinary.config({
+            cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+            api_key: process.env.CLOUDINARY_API_KEY,
+            api_secret: process.env.CLOUDINARY_API_SECRET,
+        });
+    }
+}
 
 /**
  * Upload PDF to Cloudinary and get JPG conversion URL
@@ -22,6 +26,7 @@ export async function uploadPDFToCloudinary(
     publicId?: string;
     error?: string;
 }> {
+    ensureCloudinaryConfigured();
     try {
         // Upload PDF to Cloudinary
         const uploadResult = await new Promise<any>((resolve, reject) => {
@@ -79,6 +84,7 @@ export async function uploadImageToCloudinary(
     publicId?: string;
     error?: string;
 }> {
+    ensureCloudinaryConfigured();
     try {
         const uploadResult = await new Promise<any>((resolve, reject) => {
             const uploadStream = cloudinary.uploader.upload_stream(
