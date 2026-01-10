@@ -1,10 +1,12 @@
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { createCanvas } from 'canvas';
 
-// Configure PDF.js worker for server-side (Node.js)
+// Disable worker for Next.js compatibility
+// The worker causes module resolution issues in Next.js/Webpack
 if (typeof window === 'undefined') {
-    // Point to the legacy worker for Node.js environments
-    pdfjsLib.GlobalWorkerOptions.workerSrc = require.resolve('pdfjs-dist/legacy/build/pdf.worker.min.mjs');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+    // @ts-ignore - Disable worker entirely
+    pdfjsLib.GlobalWorkerOptions.isEvalSupported = false;
 }
 
 export interface PDFConversionResult {
