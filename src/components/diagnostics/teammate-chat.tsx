@@ -98,6 +98,8 @@ export function TeammateChat({ vehicleInfo, diagramUrl, onComponentHighlight }: 
 
             setIsTyping(true);
 
+            console.log('[Auto-Analysis] Diagram URL:', diagramUrl);
+
             try {
                 const response = await fetch("/api/teammate", {
                     method: "POST",

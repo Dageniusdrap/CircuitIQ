@@ -7,111 +7,52 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// User roles
-enum UserRole {
-  ADMIN
-  ENGINEER
-  TECHNICIAN
-  VIEWER
-}
-
-// Vehicle types
-enum VehicleType {
-  AIRCRAFT
-  AUTOMOTIVE
-  MARINE
-  ELECTRIC_VEHICLE
-}
-
-// Processing status
-enum ProcessingStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
-  FAILED
-}
-
-// ============================================
-// AUTH MODELS (NextAuth.js v5)
-// ============================================
-
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  role          UserRole  @default(TECHNICIAN)
-  password      String?
-  
-  // Subscription fields
-  stripeCustomerId     String?   @unique
-  stripeSubscriptionId String?   @unique
-  stripePriceId        String?
+  id                     String           @id @default(cuid())
+  name                   String?
+  email                  String           @unique
+  emailVerified          DateTime?
+  image                  String?
+  role                   UserRole         @default(TECHNICIAN)
+  password               String?
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+  twoFactorEnabled       Boolean          @default(false)
+  twoFactorSecret        String?
+  plan                   SubscriptionPlan @default(FREE)
   stripeCurrentPeriodEnd DateTime?
-  plan                 SubscriptionPlan @default(FREE)
-  
-  // Relations
-  accounts       Account[]
-  sessions       Session[]
-  diagrams       Diagram[]
-  analyses       Analysis[]
-  subscription   Subscription?
-  feedback       Feedback[]
-  usageRecords   UsageRecord[]
-  usageSummaries UsageSummary[]
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  // Two Factor Auth
-  twoFactorEnabled     Boolean @default(false)
-  twoFactorSecret      String?
-  twoFactorBackupCodes String? @db.Text // JSON array of hashed backup codes
-}
-
-// Subscription Plans
-enum SubscriptionPlan {
-  FREE
-  PROFESSIONAL
-  ENTERPRISE
-}
-
-// Subscription Status
-enum SubscriptionStatus {
-  ACTIVE
-  CANCELED
-  PAST_DUE
-  TRIALING
-  INACTIVE
+  stripeCustomerId       String?          @unique
+  stripePriceId          String?
+  stripeSubscriptionId   String?          @unique
+  twoFactorBackupCodes   String?
+  accounts               Account[]
+  analyses               Analysis[]
+  diagrams               Diagram[]
+  feedback               Feedback[]
+  sessions               Session[]
+  subscription           Subscription?
+  usageRecords           UsageRecord[]
+  usageSummaries         UsageSummary[]
 }
 
 model Subscription {
-  id                   String   @id @default(cuid())
-  userId               String   @unique
-  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  plan                 SubscriptionPlan @default(FREE)
+  id                   String             @id @default(cuid())
+  userId               String             @unique
+  plan                 SubscriptionPlan   @default(FREE)
   status               SubscriptionStatus @default(INACTIVE)
-  
-  // Stripe fields
-  stripeSubscriptionId String?  @unique
+  stripeSubscriptionId String?            @unique
   stripePriceId        String?
   stripeCustomerId     String?
-  
-  // Billing cycle
   currentPeriodStart   DateTime?
   currentPeriodEnd     DateTime?
-  cancelAtPeriodEnd    Boolean  @default(false)
-  
-  // Usage tracking
-  diagramsUsed         Int      @default(0)
-  analysesUsed         Int      @default(0)
-  aiQueriesUsed        Int      @default(0)
-  
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-  
+  cancelAtPeriodEnd    Boolean            @default(false)
+  diagramsUsed         Int                @default(0)
+  analysesUsed         Int                @default(0)
+  aiQueriesUsed        Int                @default(0)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([stripeSubscriptionId])
   @@index([userId])
 }
@@ -122,15 +63,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId])
@@ -141,9 +81,8 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-  
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
 }
 
@@ -165,57 +104,38 @@ model PasswordResetToken {
   @@index([email])
 }
 
-// ============================================
-// DIAGRAM MODELS
-// ============================================
-
 model Diagram {
-  id              String            @id @default(cuid())
-  title           String
-  description     String?           @db.Text
-  
-  // Vehicle Information
-  vehicleType     VehicleType
-  manufacturer    String
-  model           String
-  year            Int?
-  system          String            // e.g., "Landing Gear", "Power Distribution"
-  systemCode      String?           // e.g., "28-31-00" (ATA chapter)
-  
-  // File Information
-  fileUrl         String
-  fileKey         String            // UploadThing file key
-  fileType        String            // pdf, png, jpg, dwg
-  fileSize        Int               // in bytes
-  thumbnailUrl    String?
-  
-  // AI Vision Support (for PDF diagrams)
-  analysisImageUrl String?          // PNG version for AI vision (if original is PDF)
-  analysisImageKey String?          // Blob storage key for PNG
-  
-  // Processing Status
-  status          ProcessingStatus  @default(PENDING)
-  processingStartedAt DateTime?
+  id                    String           @id @default(cuid())
+  title                 String
+  description           String?
+  vehicleType           VehicleType
+  manufacturer          String
+  model                 String
+  year                  Int?
+  system                String
+  systemCode            String?
+  fileUrl               String
+  fileKey               String
+  fileType              String
+  fileSize              Int
+  thumbnailUrl          String?
+  status                ProcessingStatus @default(PENDING)
+  processingStartedAt   DateTime?
   processingCompletedAt DateTime?
-  processingError String?           @db.Text
-  
-  // AI Extraction Results
-  aiExtractedData Json?             // Raw AI response
-  confidence      Float?            // 0-100
-  
-  // Relations
-  uploadedById    String
-  uploadedBy      User              @relation(fields: [uploadedById], references: [id])
-  components      Component[]
-  analyses        Analysis[]
-  
-  // Metadata
-  viewCount       Int               @default(0)
-  downloadCount   Int               @default(0)
-  
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  
+  processingError       String?
+  aiExtractedData       Json?
+  confidence            Float?
+  uploadedById          String
+  viewCount             Int              @default(0)
+  downloadCount         Int              @default(0)
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  analysisImageKey      String?
+  analysisImageUrl      String?
+  analyses              Analysis[]
+  components            Component[]
+  uploadedBy            User             @relation(fields: [uploadedById], references: [id])
+
   @@index([vehicleType, manufacturer, model])
   @@index([system])
   @@index([uploadedById])
@@ -223,134 +143,91 @@ model Diagram {
   @@index([createdAt])
 }
 
-// ============================================
-// COMPONENT MODELS
-// ============================================
-
 model Component {
-  id              String              @id @default(cuid())
-  diagramId       String
-  diagram         Diagram             @relation(fields: [diagramId], references: [id], onDelete: Cascade)
-  
-  // Component Identity
-  name            String
-  partNumber      String?
-  alternatePartNumbers String?        @db.Text // Comma-separated
-  type            String              // relay, fuse, switch, sensor, actuator, connector
-  manufacturer    String?
-  
-  // Location
-  location        String?             // "E3 Equipment Bay, Panel P6"
-  locationCode    String?             // "E3-P6"
-  
-  // Technical Details
-  function        String              @db.Text
-  specifications  Json?               // Flexible JSON for voltage, current, resistance, etc.
-  operatingParams Json?               // Normal operating parameters
-  
-  // Visual Position (on diagram)
-  xPosition       Float?              // X coordinate (percentage or pixels)
-  yPosition       Float?              // Y coordinate
-  boundingBox     Json?               // {x, y, width, height} for highlighting
-  
-  // Relations
-  connectionsFrom ComponentConnection[] @relation("FromComponent")
-  connectionsTo   ComponentConnection[] @relation("ToComponent")
-  failureModes    FailureMode[]
-  testProcedures  TestProcedure[]
-  
-  // Metadata
-  extractedByAI   Boolean             @default(false)
-  verifiedByUser  Boolean             @default(false)
-  confidence      Float?              // AI confidence 0-100
-  
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
-  
+  id                   String                @id @default(cuid())
+  diagramId            String
+  name                 String
+  partNumber           String?
+  alternatePartNumbers String?
+  type                 String
+  manufacturer         String?
+  location             String?
+  locationCode         String?
+  function             String
+  specifications       Json?
+  operatingParams      Json?
+  xPosition            Float?
+  yPosition            Float?
+  boundingBox          Json?
+  extractedByAI        Boolean               @default(false)
+  verifiedByUser       Boolean               @default(false)
+  confidence           Float?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  diagram              Diagram               @relation(fields: [diagramId], references: [id], onDelete: Cascade)
+  connectionsFrom      ComponentConnection[] @relation("FromComponent")
+  connectionsTo        ComponentConnection[] @relation("ToComponent")
+  failureModes         FailureMode[]
+  testProcedures       TestProcedure[]
+
   @@index([diagramId])
   @@index([type])
   @@index([partNumber])
 }
 
 model ComponentConnection {
-  id            String    @id @default(cuid())
-  
-  // Connection endpoints
-  fromId        String
-  toId          String
-  fromComponent Component @relation("FromComponent", fields: [fromId], references: [id], onDelete: Cascade)
-  toComponent   Component @relation("ToComponent", fields: [toId], references: [id], onDelete: Cascade)
-  
-  // Wire/Connection Details
-  wireColor     String?
-  wireGauge     String?             // e.g., "22AWG", "16AWG"
-  wireLength    Float?              // in meters
-  wireRoute     String?             @db.Text
-  
-  // Connector Details
-  connectorType String?
-  connectorPart String?
-  pinNumber     String?
-  pinFunction   String?
-  
-  // Signal/Power Type
-  signalType    String?             // power, ground, signal, data, can_bus
-  voltage       String?             // e.g., "28V DC", "115V AC"
-  current       String?             // e.g., "5A", "500mA"
-  
-  // Testing
-  expectedResistance Float?         // in ohms
-  expectedVoltage    Float?         // in volts
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  
+  id                 String    @id @default(cuid())
+  fromId             String
+  toId               String
+  wireColor          String?
+  wireGauge          String?
+  wireLength         Float?
+  wireRoute          String?
+  connectorType      String?
+  connectorPart      String?
+  pinNumber          String?
+  pinFunction        String?
+  signalType         String?
+  voltage            String?
+  current            String?
+  expectedResistance Float?
+  expectedVoltage    Float?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  fromComponent      Component @relation("FromComponent", fields: [fromId], references: [id], onDelete: Cascade)
+  toComponent        Component @relation("ToComponent", fields: [toId], references: [id], onDelete: Cascade)
+
   @@unique([fromId, toId])
   @@index([fromId])
   @@index([toId])
 }
 
-// ============================================
-// FAILURE & DIAGNOSTIC MODELS
-// ============================================
-
 model FailureMode {
   id                  String    @id @default(cuid())
   componentId         String
-  component           Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
-  
-  // Failure Details
-  mode                String    // open, short, intermittent, degraded, corroded
-  symptoms            String    @db.Text
-  visualIndicators    String?   @db.Text
-  
-  // Impact Analysis
-  directImpacts       Json      // Array of affected systems
-  cascadingEffects    Json      // Array of secondary effects
-  safetyImplications  String?   @db.Text
-  
-  // Bypass/Isolation Effects
+  mode                String
+  symptoms            String
+  visualIndicators    String?
+  directImpacts       Json
+  cascadingEffects    Json
+  safetyImplications  String?
   bypassPossible      Boolean   @default(false)
-  bypassProcedure     String?   @db.Text
-  bypassLimitations   String?   @db.Text
+  bypassProcedure     String?
+  bypassLimitations   String?
   isolationPossible   Boolean   @default(false)
-  isolationProcedure  String?   @db.Text
-  isolationEffects    String?   @db.Text
-  
-  // Probability & Priority
-  probability         Float?    // 0-100 percentage
-  severity            String?   // low, medium, high, critical
-  priority            String?   // A, B, C, D
-  
-  // Repair Information
-  repairProcedure     String?   @db.Text
-  estimatedRepairTime Int?      // in minutes
-  requiredTools       Json?     // Array of tool names
-  requiredParts       Json?     // Array of part numbers
-  
+  isolationProcedure  String?
+  isolationEffects    String?
+  probability         Float?
+  severity            String?
+  priority            String?
+  repairProcedure     String?
+  estimatedRepairTime Int?
+  requiredTools       Json?
+  requiredParts       Json?
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
-  
+  component           Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
+
   @@index([componentId])
   @@index([mode])
   @@index([severity])
@@ -359,299 +236,277 @@ model FailureMode {
 model TestProcedure {
   id                String    @id @default(cuid())
   componentId       String
-  component         Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
-  
-  // Procedure Details
   name              String
-  description       String    @db.Text
-  steps             Json      // Array of step objects
-  
-  // Test Requirements
-  requiredTools     Json      // ["Multimeter (DMM)", "Test Light"]
-  safetyPrecautions Json      // Array of safety requirements
-  prerequisites     String?   @db.Text
-  
-  // Expected Results
-  expectedValues    Json      // {voltage: "28V DC ±2V", resistance: "<0.5Ω"}
-  passCriteria      String    @db.Text
-  failCriteria      String    @db.Text
-  
-  // Test Type
-  testType          String    // visual, continuity, voltage, resistance, functional
-  estimatedTime     Int       // in minutes
-  
+  description       String
+  steps             Json
+  requiredTools     Json
+  safetyPrecautions Json
+  prerequisites     String?
+  expectedValues    Json
+  passCriteria      String
+  failCriteria      String
+  testType          String
+  estimatedTime     Int
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
-  
+  component         Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
+
   @@index([componentId])
   @@index([testType])
 }
 
-// ============================================
-// ANALYSIS & DIAGNOSTIC MODELS
-// ============================================
-
 model Analysis {
-  id                String    @id @default(cuid())
-  
-  // Related Entities
+  id                String        @id @default(cuid())
   diagramId         String
-  diagram           Diagram   @relation(fields: [diagramId], references: [id], onDelete: Cascade)
   userId            String
-  user              User      @relation(fields: [userId], references: [id])
-  
-  // Problem Description
-  symptom           String    @db.Text
-  additionalContext String?   @db.Text
-  
-  // AI Analysis Results
-  aiResponse        Json      // Complete structured AI response
-  suggestedTests    Json      // Array of test procedures
-  probableCauses    Json      // Ranked list with confidence scores
-  affectedSystems   Json?     // List of impacted systems
-  
-  // Diagnostic Results
+  symptom           String
+  additionalContext String?
+  aiResponse        Json
+  suggestedTests    Json
+  probableCauses    Json
+  affectedSystems   Json?
   completedAt       DateTime?
   successful        Boolean?
-  resolution        String?   @db.Text
+  resolution        String?
   rootCause         String?
-  
-  // User Feedback
   helpful           Boolean?
-  accuracy          Int?      // 1-5 rating
-  feedback          String?   @db.Text
-  
-  // Conversation History
-  chatHistory       Json      // Array of messages
-  measurements      Measurement[]
-  
-  // Metadata
-  processingTime    Int?      // in milliseconds
+  accuracy          Int?
+  feedback          String?
+  chatHistory       Json
+  processingTime    Int?
   tokensUsed        Int?
-  
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  diagram           Diagram       @relation(fields: [diagramId], references: [id], onDelete: Cascade)
+  user              User          @relation(fields: [userId], references: [id])
+  measurements      Measurement[]
+
   @@index([diagramId])
   @@index([userId])
   @@index([createdAt])
   @@index([successful])
 }
 
-// ============================================
-// SYSTEM & INTEGRATION MODELS
-// ============================================
-
 model SystemIntegration {
-  id              String   @id @default(cuid())
-  
-  // System Details
-  systemName      String
-  systemCode      String?
-  vehicleType     VehicleType
-  
-  // Integration Information
-  connectedSystems Json    // Array of connected system names
-  powerSources     Json    // Array of power distribution points
-  groundPoints     Json    // Array of ground references
-  dataInterfaces   Json?   // CAN bus, ARINC, etc.
-  
-  // Dependencies
-  dependencies     Json    // Systems this depends on
-  dependents       Json    // Systems that depend on this
-  
-  // Emergency Procedures
-  emergencyBypass  String? @db.Text
-  redundancyInfo   String? @db.Text
-  
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  
+  id               String      @id @default(cuid())
+  systemName       String
+  systemCode       String?
+  vehicleType      VehicleType
+  connectedSystems Json
+  powerSources     Json
+  groundPoints     Json
+  dataInterfaces   Json?
+  dependencies     Json
+  dependents       Json
+  emergencyBypass  String?
+  redundancyInfo   String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
   @@unique([systemName, vehicleType])
   @@index([vehicleType])
 }
 
-// ============================================
-// NOTIFICATION & ACTIVITY LOG
-// ============================================
-
 model ActivityLog {
-  id          String   @id @default(cuid())
-  userId      String
-  action      String   // uploaded, analyzed, viewed, edited
-  entityType  String   // diagram, component, analysis
-  entityId    String
-  details     Json?
-  ipAddress   String?
-  userAgent   String?  @db.Text
-  
-  createdAt   DateTime @default(now())
-  
+  id         String   @id @default(cuid())
+  userId     String
+  action     String
+  entityType String
+  entityId   String
+  details    Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
   @@index([userId])
   @@index([action])
   @@index([createdAt])
 }
 
-// ============================================
-// MARKETPLACE & KNOWLEDGE MODELS
-// ============================================
-
 model ConfirmedFix {
-  id              String   @id @default(cuid())
-  
-  // Issue Context
-  symptom         String   @db.Text
-  vehicleMake     String
-  vehicleModel    String
-  vehicleYear     Int?
-  componentName   String
-  
-  // Solution
-  fixDescription  String   @db.Text
-  steps           Json?    // Array of strings
-  
-  // Metrics
-  timesSolved     Int      @default(1)
-  votes           Int      @default(0)
-  difficulty      String?  // Easy, Medium, Hard
-  averageCost     Float?
-  averageTime     Int?     // in minutes
-  
-  // Verification
-  verifiedBy      Json?    // Array of user IDs or Names
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
+  id             String   @id @default(cuid())
+  symptom        String
+  vehicleMake    String
+  vehicleModel   String
+  vehicleYear    Int?
+  componentName  String
+  fixDescription String
+  steps          Json?
+  timesSolved    Int      @default(1)
+  votes          Int      @default(0)
+  difficulty     String?
+  averageCost    Float?
+  averageTime    Int?
+  verifiedBy     Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
   @@index([symptom])
   @@index([vehicleMake, vehicleModel])
 }
 
 model TSB {
-  id              String   @id @default(cuid())
-  
-  number          String   // e.g., "SB-737-24-001"
-  title           String
-  description     String   @db.Text
-  
-  // Applicability
-  manufacturer    String
-  models          Json     // Array of model names
-  years           Json?    // Array of years or range strings
-  
-  // Content
-  issue           String   @db.Text
-  resolution      String   @db.Text
-  pdfUrl          String?
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt // Added for consistency
-  
-  @@unique([number])
+  id           String   @id @default(cuid())
+  number       String   @unique
+  title        String
+  description  String
+  manufacturer String
+  models       Json
+  years        Json?
+  issue        String
+  resolution   String
+  pdfUrl       String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
   @@index([manufacturer])
 }
 
 model Measurement {
-  id            String   @id @default(cuid())
-  
-  analysisId    String?
-  analysis      Analysis? @relation(fields: [analysisId], references: [id])
-  componentId   String?
-  
-  timestamp     DateTime @default(now())
-  type          String   // voltage, resistance, current, frequency
-  value         Float
-  unit          String   // V, Ohm, A, Hz
-  location      String?  // "Pin 30", "Connector C1"
-  
-  // Analysis
-  isAbnormal    Boolean  @default(false)
-  notes         String?
-  
+  id          String    @id @default(cuid())
+  analysisId  String?
+  componentId String?
+  timestamp   DateTime  @default(now())
+  type        String
+  value       Float
+  unit        String
+  location    String?
+  isAbnormal  Boolean   @default(false)
+  notes       String?
+  analysis    Analysis? @relation(fields: [analysisId], references: [id])
+
   @@index([analysisId])
   @@index([componentId])
 }
 
 model PartSource {
-  id            String   @id @default(cuid())
-  
-  partNumber    String
-  
-  vendor        String   // "Aircraft Spruce", "Boeing", "DigiKey"
-  price         Float
-  currency      String   @default("USD")
-  inStock       Boolean  @default(true)
-  leadTime      String?  // "2-3 days"
-  buyLink       String?
-  
-  lastChecked   DateTime @default(now())
-  
+  id          String   @id @default(cuid())
+  partNumber  String
+  vendor      String
+  price       Float
+  currency    String   @default("USD")
+  inStock     Boolean  @default(true)
+  leadTime    String?
+  buyLink     String?
+  lastChecked DateTime @default(now())
+
   @@index([partNumber])
   @@index([vendor])
 }
 
-// ============================================
-// FEEDBACK MODELS
-// ============================================
-
 model Feedback {
   id          String   @id @default(cuid())
-  
-  // User Information
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Feedback Type
-  type        String   // bug, feature, improvement, other
+  type        String
   title       String
-  description String   @db.Text
-  
-  // Context
-  page        String?  // URL or page name where feedback was submitted
-  rating      Int?     // Optional 1-5 rating
-  
-  // Status
-  status      String   @default("pending") // pending, reviewing, planned, implemented, rejected
-  adminNotes  String?  @db.Text
-  
+  description String
+  page        String?
+  rating      Int?
+  status      String   @default("pending")
+  adminNotes  String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
   @@index([type])
   @@index([status])
   @@index([createdAt])
 }
 
-// ============================================
-// USAGE TRACKING MODELS
-// ============================================
-
-// Track user actions for analytics and billing
 model UsageRecord {
-  id          String   @id @default(cuid())
-  
-  // User Information
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Action Type
-  action      UsageAction
-  resourceId  String?  // ID of diagram, analysis, etc.
-  
-  // Metadata
-  metadata    Json?    // Additional context (file size, duration, etc.)
-  
-  // Billing period tracking
+  id                 String      @id @default(cuid())
+  userId             String
+  action             UsageAction
+  resourceId         String?
+  metadata           Json?
   billingPeriodStart DateTime
   billingPeriodEnd   DateTime
-  
-  createdAt   DateTime @default(now())
-  
+  createdAt          DateTime    @default(now())
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
   @@index([action])
   @@index([createdAt])
   @@index([billingPeriodStart, billingPeriodEnd])
+}
+
+model UsageSummary {
+  id             String   @id @default(cuid())
+  userId         String
+  month          Int
+  year           Int
+  diagramUploads Int      @default(0)
+  aiAnalyses     Int      @default(0)
+  procedureViews Int      @default(0)
+  pdfExports     Int      @default(0)
+  dxfExports     Int      @default(0)
+  apiCalls       Int      @default(0)
+  uploadLimit    Int?
+  analysisLimit  Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month, year])
+  @@index([userId])
+  @@index([year, month])
+}
+
+model PlanLimits {
+  id                     String           @id @default(cuid())
+  plan                   SubscriptionPlan @unique
+  diagramUploadsPerMonth Int?
+  aiAnalysesPerMonth     Int?
+  procedureViewsPerMonth Int?
+  pdfExportsPerMonth     Int?
+  dxfExportsPerMonth     Int?
+  apiCallsPerMonth       Int?
+  maxStorageGB           Int?
+  maxFileSize            Int?
+  teamCollaboration      Boolean          @default(false)
+  apiAccess              Boolean          @default(false)
+  prioritySupport        Boolean          @default(false)
+  customAITraining       Boolean          @default(false)
+  whiteLabeling          Boolean          @default(false)
+  maxTeamMembers         Int?
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+}
+
+enum UserRole {
+  ADMIN
+  ENGINEER
+  TECHNICIAN
+  VIEWER
+}
+
+enum VehicleType {
+  AIRCRAFT
+  AUTOMOTIVE
+  MARINE
+  ELECTRIC_VEHICLE
+}
+
+enum ProcessingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum SubscriptionPlan {
+  FREE
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+  INACTIVE
 }
 
 enum UsageAction {
@@ -661,67 +516,4 @@ enum UsageAction {
   EXPORT_PDF
   EXPORT_DXF
   API_CALL
-}
-
-// Monthly usage summary for faster queries
-model UsageSummary {
-  id              String   @id @default(cuid())
-  
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Time period
-  month           Int      // 1-12
-  year            Int      // 2026
-  
-  // Counts
-  diagramUploads  Int      @default(0)
-  aiAnalyses      Int      @default(0)
-  procedureViews  Int      @default(0)
-  pdfExports      Int      @default(0)
-  dxfExports      Int      @default(0)
-  apiCalls        Int      @default(0)
-  
-  // Limits (copy from plan at time of creation)
-  uploadLimit     Int?
-  analysisLimit   Int?
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  @@unique([userId, month, year])
-  @@index([userId])
-  @@index([year, month])
-}
-
-// Plan limits configuration
-model PlanLimits {
-  id            String           @id @default(cuid())
-  
-  plan          SubscriptionPlan @unique
-  
-  // Monthly limits
-  diagramUploadsPerMonth  Int?  // null = unlimited
-  aiAnalysesPerMonth      Int?
-  procedureViewsPerMonth  Int?
-  pdfExportsPerMonth      Int?
-  dxfExportsPerMonth      Int?
-  apiCallsPerMonth        Int?
-  
-  // Storage limits
-  maxStorageGB            Int?
-  maxFileSize            Int?  // in MB
-  
-  // Feature flags
-  teamCollaboration       Boolean @default(false)
-  apiAccess               Boolean @default(false)
-  prioritySupport         Boolean @default(false)
-  customAITraining        Boolean @default(false)
-  whiteLabeling           Boolean @default(false)
-  
-  // Team limits
-  maxTeamMembers          Int?
-  
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
 }

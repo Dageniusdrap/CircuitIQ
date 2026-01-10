@@ -1,0 +1,14 @@
+
+> circuit-iq@0.1.0 dev
+> next dev
+
+⚠ Port 3000 is in use by process 13275, using available port 3004 instead.
+▲ Next.js 16.1.1 (Turbopack)
+- Local:         http://localhost:3004
+- Network:       http://192.168.0.14:3004
+- Environments: .env.local, .env
+
+✓ Starting...
+⨯ Unable to acquire lock at /Users/dradrigapatrick/Desktop/CircuitIQ/.next/dev/lock, is another instance of next dev running?
+  Suggestion: If you intended to restart next dev, terminate the other process, and then try again.
+[?25h
