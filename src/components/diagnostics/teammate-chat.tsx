@@ -99,29 +99,7 @@ export function TeammateChat({ vehicleInfo, diagramUrl, onComponentHighlight }: 
             setIsTyping(true);
 
             console.log('[Auto-Analysis] Diagram URL:', diagramUrl);
-
-            // If the URL is a PDF, convert it to PNG first
-            let imageUrlToAnalyze = diagramUrl;
-            if (diagramUrl.toLowerCase().endsWith('.pdf')) {
-                console.log('[Auto-Analysis] PDF detected, converting to PNG...');
-                try {
-                    const conversionResponse = await fetch('/api/convert-pdf-to-png', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ pdfUrl: diagramUrl }),
-                    });
-
-                    if (conversionResponse.ok) {
-                        const conversionData = await conversionResponse.json();
-                        imageUrlToAnalyze = conversionData.imageUrl;
-                        console.log('[Auto-Analysis] PDF converted successfully');
-                    } else {
-                        console.error('[Auto-Analysis] PDF conversion failed');
-                    }
-                } catch (conversionError) {
-                    console.error('[Auto-Analysis] PDF conversion error:', conversionError);
-                }
-            }
+            console.log('[Auto-Analysis] Testing direct PDF URL with OpenAI...');
 
             try {
                 const response = await fetch("/api/teammate", {
@@ -131,7 +109,7 @@ export function TeammateChat({ vehicleInfo, diagramUrl, onComponentHighlight }: 
                         sessionId,
                         action: "photo", // Use photo analysis
                         vehicleInfo,
-                        imageUrl: imageUrlToAnalyze, // Use converted PNG or original image
+                        imageUrl: diagramUrl, // Send PDF URL directly
                         analysisType: "comprehensive", // Get full analysis
                     }),
                 });
