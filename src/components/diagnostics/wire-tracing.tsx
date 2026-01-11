@@ -19,14 +19,29 @@ interface Component {
     type: string
     location?: string
     connections?: string[]
+    x?: number
+    y?: number
+    width?: number
+    height?: number
+}
+
+interface WirePath {
+    from: { name: string }
+    to: { name: string }
+    path: string[]
+    wireColor?: string
+    wireGauge?: string
+    points?: { x: number; y: number }[]
 }
 
 interface WireTracingProps {
     diagramId: string
     onHighlight?: (componentIds: string[]) => void
+    onComponentsExtracted?: (components: Component[]) => void
+    onPathTraced?: (path: WirePath | null) => void
 }
 
-export function WireTracing({ diagramId, onHighlight }: WireTracingProps) {
+export function WireTracing({ diagramId, onHighlight, onComponentsExtracted, onPathTraced }: WireTracingProps) {
     const [components, setComponents] = useState<Component[]>([])
     const [loading, setLoading] = useState(false)
     const [extracting, setExtracting] = useState(false)
@@ -38,7 +53,18 @@ export function WireTracing({ diagramId, onHighlight }: WireTracingProps) {
     // Extract components on mount
     useEffect(() => {
         extractComponents()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [diagramId])
+
+    // Notify parent when components change
+    useEffect(() => {
+        onComponentsExtracted?.(components)
+    }, [components, onComponentsExtracted])
+
+    // Notify parent when path changes
+    useEffect(() => {
+        onPathTraced?.(tracedPath)
+    }, [tracedPath, onPathTraced])
 
     const extractComponents = async () => {
         setExtracting(true)

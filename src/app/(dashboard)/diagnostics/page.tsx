@@ -4,8 +4,11 @@ import { prisma } from "@/lib/db"
 import { DiagramSelector } from "@/components/diagnostics/diagram-selector"
 import { DiagramSelectorWidget } from "@/components/diagnostics/diagram-selector-widget"
 import { WireTracing } from "@/components/diagnostics/wire-tracing"
+import { DiagnosticsInteractive } from "@/components/diagnostics/diagnostics-interactive"
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { MessageSquare, Zap } from "lucide-react"
 
 export const metadata: Metadata = {
     title: "Diagnostics | CircuitIQ",
@@ -13,7 +16,7 @@ export const metadata: Metadata = {
 }
 
 export default async function DiagnosticsPage(props: {
-    searchParams: Promise<{ diagramId?: string }>
+    searchParams: Promise<{ diagramId?: string; mode?: string }>
 }) {
     // Check authentication first
     const session = await auth()
@@ -58,6 +61,8 @@ export default async function DiagnosticsPage(props: {
         }
     }
 
+    const imageUrl = diagramContext?.analysisImageUrl || diagramContext?.fileUrl;
+
     return (
         <div className="space-y-4">
             <div className="mb-4">
@@ -69,31 +74,58 @@ export default async function DiagnosticsPage(props: {
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                {/* Main Chat Area */}
-                <div className="lg:col-span-3 h-[calc(100vh-220px)] flex flex-col">
-                    <TeammateChat
-                        diagramId={searchParams.diagramId}
-                        vehicleInfo={vehicleInfo}
-                        diagramUrl={diagramContext?.analysisImageUrl || diagramContext?.fileUrl}
-                    />
-                </div>
+            <Tabs defaultValue={searchParams.mode || "chat"} className="w-full">
+                <TabsList className="grid w-full max-w-md grid-cols-2">
+                    <TabsTrigger value="chat" className="flex items-center gap-2">
+                        <MessageSquare className="h-4 w-4" />
+                        AI Chat
+                    </TabsTrigger>
+                    <TabsTrigger value="visual" className="flex items-center gap-2">
+                        <Zap className="h-4 w-4" />
+                        Visual Tracing
+                    </TabsTrigger>
+                </TabsList>
 
-                {/* Sidebar with Uploaded Documents */}
-                <div className="lg:col-span-1 space-y-4">
-                    {/* Wire Tracing */}
-                    {searchParams.diagramId && (
-                        <WireTracing diagramId={searchParams.diagramId} />
+                <TabsContent value="chat" className="mt-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                        {/* Main Chat Area */}
+                        <div className="lg:col-span-3 h-[calc(100vh-280px)] flex flex-col">
+                            <TeammateChat
+                                diagramId={searchParams.diagramId}
+                                vehicleInfo={vehicleInfo}
+                                diagramUrl={imageUrl}
+                            />
+                        </div>
+
+                        {/* Sidebar */}
+                        <div className="lg:col-span-1 space-y-4">
+                            {searchParams.diagramId && (
+                                <WireTracing diagramId={searchParams.diagramId} />
+                            )}
+
+                            <DiagramSelectorWidget
+                                diagrams={allDiagrams}
+                                title="Switch Diagram"
+                                maxItems={8}
+                                currentDiagramId={searchParams.diagramId}
+                            />
+                        </div>
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="visual" className="mt-6">
+                    {imageUrl && searchParams.diagramId ? (
+                        <DiagnosticsInteractive
+                            diagramId={searchParams.diagramId}
+                            imageUrl={imageUrl}
+                        />
+                    ) : (
+                        <div className="text-center py-12 text-muted-foreground">
+                            No diagram selected
+                        </div>
                     )}
-
-                    <DiagramSelectorWidget
-                        diagrams={allDiagrams}
-                        title="Switch Diagram"
-                        maxItems={8}
-                        currentDiagramId={searchParams.diagramId}
-                    />
-                </div>
-            </div>
+                </TabsContent>
+            </Tabs>
         </div>
     )
 }
