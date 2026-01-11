@@ -168,11 +168,34 @@ export function DiagramOverlay({
                                     fill={isHovered ? '#3b82f6' : '#10b981'}
                                     stroke="white"
                                     strokeWidth="2"
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: 1 }}
-                                    whileHover={{ scale: 1.2 }}
-                                    transition={{ type: 'spring', stiffness: 300 }}
+                                    initial={{ scale: 0, opacity: 0 }}
+                                    animate={{
+                                        scale: 1,
+                                        opacity: 1,
+                                    }}
+                                    whileHover={{ scale: 1.3 }}
+                                    transition={{
+                                        type: 'spring',
+                                        stiffness: 400,
+                                        damping: 17,
+                                        delay: component.id ? parseInt(component.id.replace(/\D/g, '') || '0') * 0.05 : 0
+                                    }}
                                 />
+
+                                {/* Pulse ring on hover */}
+                                {isHovered && (
+                                    <motion.circle
+                                        cx={cx}
+                                        cy={cy}
+                                        r={16}
+                                        fill="none"
+                                        stroke="#3b82f6"
+                                        strokeWidth="3"
+                                        initial={{ scale: 0.8, opacity: 0.8 }}
+                                        animate={{ scale: 1.5, opacity: 0 }}
+                                        transition={{ duration: 1, repeat: Infinity }}
+                                    />
+                                )}
 
                                 {/* Component label (on hover) */}
                                 {isHovered && (
