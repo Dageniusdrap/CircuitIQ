@@ -10,6 +10,10 @@ export interface Component {
     type: string;
     location?: string;
     connections?: string[];
+    x?: number; // X position as percentage (0-100)
+    y?: number; // Y position as percentage (0-100)
+    width?: number; // Width as percentage
+    height?: number; // Height as percentage
 }
 
 export interface WirePath {
@@ -18,6 +22,7 @@ export interface WirePath {
     path: string[];
     wireColor?: string;
     wireGauge?: string;
+    points?: { x: number; y: number }[]; // Path coordinate points
 }
 
 /**
@@ -33,7 +38,7 @@ export async function extractComponents(imageUrl: string): Promise<Component[]> 
                     content: [
                         {
                             type: 'text',
-                            text: `Analyze this circuit diagram and extract ALL components.
+                            text: `Analyze this circuit diagram and extract ALL components WITH their positions.
 
 For each component, provide:
 1. A unique identifier (e.g., "CB1", "RELAY_1", "SWITCH_A")
@@ -41,6 +46,10 @@ For each component, provide:
 3. Component type (circuit breaker, relay, switch, connector, fuse, etc.)
 4. Location/position reference if visible
 5. Connections to other components
+6. **IMPORTANT**: X and Y coordinates as percentages (0-100) of image dimensions
+   - x: horizontal position from left edge (0 = left, 100 = right)
+   - y: vertical position from top edge (0 = top, 100 = bottom)
+   - Estimate the center point of each component
 
 Return ONLY a JSON array of components in this exact format:
 [
@@ -49,11 +58,13 @@ Return ONLY a JSON array of components in this exact format:
     "name": "Circuit Breaker 1",
     "type": "circuit_breaker",
     "location": "Panel A",
-    "connections": ["RELAY_1", "BUS_1"]
+    "connections": ["RELAY_1", "BUS_1"],
+    "x": 25.5,
+    "y": 30.2
   }
 ]
 
-Be thorough - extract every visible component, even small ones.`,
+Be thorough - extract every visible component with accurate positions.`,
                         },
                         {
                             type: 'image_url',
@@ -106,6 +117,10 @@ Provide:
 2. Wire color if visible
 3. Wire gauge/size if visible
 4. Any intermediate connection points
+5. **IMPORTANT**: Key coordinate points along the wire path as percentages (0-100)
+   - Include start point, turns/bends, and end point
+   - x: horizontal position (0 = left, 100 = right)
+   - y: vertical position (0 = top, 100 = bottom)
 
 Known components in diagram:
 ${allComponents.map(c => `- ${c.id}: ${c.name} (${c.type})`).join('\n')}
@@ -116,7 +131,12 @@ Return ONLY JSON in this format:
   "to": "${endComponent}",
   "path": ["component_id_1", "component_id_2", ...],
   "wireColor": "color or null",
-  "wireGauge": "gauge or null"
+  "wireGauge": "gauge or null",
+  "points": [
+    {"x": 25.5, "y": 30.2},
+    {"x": 45.0, "y": 30.2},
+    {"x": 45.0, "y": 55.8}
+  ]
 }`,
                         },
                         {
@@ -151,6 +171,7 @@ Return ONLY JSON in this format:
             path: pathData.path || [],
             wireColor: pathData.wireColor || undefined,
             wireGauge: pathData.wireGauge || undefined,
+            points: pathData.points || [], // Include coordinate points
         };
     } catch (error) {
         console.error('Error tracing wire path:', error);
