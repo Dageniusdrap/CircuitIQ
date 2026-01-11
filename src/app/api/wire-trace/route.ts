@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const imageUrl = diagram.fileUrl;
+        const imageUrl = diagram.analysisImageUrl || diagram.fileUrl;
 
         switch (action) {
             case 'extract_components': {
